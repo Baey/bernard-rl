@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="bernard">
+  <joint name="l_arm_joint" type="revolute">
+    <origin xyz="0.052 -0. -0.0466032" rpy="-3.1415927 -1.5707963 0. "/>
+    <parent link="l_hip"/>
+    <child link="l_arm"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-1.5707963" upper="1.5707963" effort="0." velocity="0."/>
+  </joint>
+  <joint name="l_foot_joint" type="revolute">
+    <origin xyz="0.02 0.19 -0.0065" rpy="3.1415927 0. 1.8325957"/>
+    <parent link="l_forearm"/>
+    <child link="l_foot"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-1.2217305" upper="1.2217305" effort="0." velocity="0."/>
+  </joint>
+  <joint name="l_hip_joint" type="revolute">
+    <origin xyz="0.0530836 -0.0463685 0.0004409" rpy="1.5707964 0. 0. "/>
+    <parent link="body"/>
+    <child link="l_hip"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-0.4363323" upper="0.5235988" effort="0." velocity="0."/>
+  </joint>
+  <joint name="l_knee_joint" type="revolute">
+    <origin xyz="-0.119007 0.0154056 -0. " rpy="-0. 0. -0.2617994"/>
+    <parent link="l_arm"/>
+    <child link="l_forearm"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-0.8726646" upper="1.7453293" effort="0." velocity="0."/>
+  </joint>
+  <joint name="r_arm_joint" type="revolute">
+    <origin xyz="0.052 -0. 0.0466032" rpy="-3.1415927 1.5707964 0. "/>
+    <parent link="r_hip"/>
+    <child link="r_arm"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-1.5707963" upper="1.5707963" effort="0." velocity="0."/>
+  </joint>
+  <joint name="r_foot_joint" type="revolute">
+    <origin xyz="0.02 0.19 0.0065" rpy="3.1415927 0. 1.8325957"/>
+    <parent link="r_forearm"/>
+    <child link="r_foot"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-1.2217305" upper="1.2217305" effort="0." velocity="0."/>
+  </joint>
+  <joint name="r_hip_joint" type="revolute">
+    <origin xyz="-0.0469164 -0.0463544 0.0004409" rpy="1.5707964 -0. -3.1415927"/>
+    <parent link="body"/>
+    <child link="r_hip"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-0.4363323" upper="0.5235988" effort="0." velocity="0."/>
+  </joint>
+  <joint name="r_knee_joint" type="revolute">
+    <origin xyz="-0.119007 0.0154056 0. " rpy="-0. 0. -0.2617994"/>
+    <parent link="r_arm"/>
+    <child link="r_forearm"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="-0.8726646" upper="1.7453293" effort="0." velocity="0."/>
+  </joint>
+  <link name="body">
+    <inertial>
+      <origin xyz="0.00478695 -0.00867622 -0.00853418 m" rpy="0. 0. 0."/>
+      <mass value="1.94701706"/>
+      <inertia ixx="0.00886295" ixy="-0.00009625" ixz="-0.00021054" iyy="0.00554807" iyz="0.00037748" izz="0.00908693"/>
+    </inertial>
+    <collision>
+      <origin xyz="0.00056 0.0104835 -0.011461 " rpy="0. 0. 0."/>
+      <geometry>
+        <box size="0.1160978 0.2033129 0.13758 "/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.0530836 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm__0x32x7mm_Bearing_Cover__0x32x7mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0530836 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm__0x32x7mm_Bearing_Outer__0x32x7mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0530836 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm__0x32x7mm_Bearing_Inner__0x32x7mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0399871 -0.0653645 -0.0036212" rpy="3.1415927 -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Top_Frame_L_Top_Frame_L.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 -0.0753645 -0.001559 " rpy="1.5707964 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Hip_Cover_Hip_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030921 0.0213355 -0.0035671" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Frame_Core_Frame_Core.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030751 0.0226436 -0.0662086" rpy="3.1415927 -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Body_Bottom_Frame_Body_Bottom_Frame.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030836 -0.0653645 -0.0075599" rpy="3.1415927 -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Core_Frame_Holder_Core_Frame_Holder.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm_01__0x32x7mm_Bearing_Cover__0x32x7mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm_01__0x32x7mm_Bearing_Outer__0x32x7mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 0.1076355 -0.001559 " rpy="0. -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/bearing32x7/bearing_20x32x7mm_01__0x32x7mm_Bearing_Inner__0x32x7mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030921 0.1002355 -0.0011171" rpy="1.5707964 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Body_Back_Body_Back.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030836 -0.0553645 -0.0597501" rpy="1.5707964 -0. -3.1415927"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Body_Bottom_Body_Bottom.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0149248 -0.0368453 -0.0035671" rpy="1.5707964 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_FPGA_Holder_FPGA_Holder.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0338198 -0.0653645 -0.0036212" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/printed_body_parts_Top_Frame_R_Top_Frame_R.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_XT90_XT90.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_XT90pos_cable_XT90pos_cable.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_cable4_JST_XHP_4_cable4.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_cable5_JST_XHP_4_cable5.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_cable3_JST_XHP_4_cable3.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_JST_XHP_4.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_cable1_JST_XHP_4_cable1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_XT90neg_cable_XT90neg_cable.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_JST_XHP_4_cable2_JST_XHP_4_cable2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0030336 0.0376355 -0.0445591" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/tattu_4500/tattu_4500_mah_Battery_Battery.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_ESWITCH_TL3301SPF160QGBLK_Varsay_ESWITCH_TL3301SPF160QGBLK_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_ESWITCH_TL3301SPF160QGBLU_Varsay_ESWITCH_TL3301SPF160QGBLU_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_MOLEX_0678038020_for_NUCLEO_MOLEX_0678038020_for_NUCLEO.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_SSQ_106_01_G_S_for_NUCLEO_Varsay_SAMTEC_SSQ_106_01_G_S_for_NUCLEO_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_TSW_119_07_T_D_for_NUCLEO_Varsay_1_SAMTEC_TSW_119_07_T_D_for_NUCLEO_Varsay_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_TSW_119_07_T_D_for_NUCLEO_Varsay_SAMTEC_TSW_119_07_T_D_for_NUCLEO_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_ABRACON_ABL_8000MHZ_B2_Varsay_ABRACON_ABL_8000MHZ_B2_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_SSQ_108_01_G_S_for_NUCLEO_Varsay_SAMTEC_SSQ_108_01_G_S_for_NUCLEO_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_SSQ_110_01_G_S_for_NUCLEO_Varsay_SAMTEC_SSQ_110_01_G_S_for_NUCLEO_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/ESWITCH_TL3301SPF160QGBLU_Varsay_01_ESWITCH_TL3301SPF160QGBLU_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_SAMTEC_SSQ_108_01_G_S_for_NUCLEO_Varsay_1_SAMTEC_SSQ_108_01_G_S_for_NUCLEO_Varsay_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/nucleo_l476rg/nucleo_l476rg_NUCLEO_F411RE_PCB_Varsay_NUCLEO_F411RE_PCB_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/MOLEX_0678038020_for_NUCLEO_01_MOLEX_0678038020_for_NUCLEO.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0140406 -0.0302645 0.0039037" rpy="0. 0. 0.0000001"/>
+      <geometry>
+        <mesh filename="meshes/ESWITCH_TL3301SPF160QGBLK_Varsay_01_ESWITCH_TL3301SPF160QGBLK_Varsay.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_SOM_BOARD_OUTLINE_SOM_BOARD_OUTLINE.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_PC104_SN_XX_XX_7_SOLID1_2_PC104_SN_XX_XX_7_SOLID1_2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_CHIP_18536_1_CHIP_18536_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_GSB311231HR_4_1_GSB311231HR_4_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_T_XX_XX_XX_1_SOLID1_1_JSOM_T_XX_XX_XX_1_SOLID1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_PC104_SN_XX_XX_7_SOLID1_PC104_SN_XX_XX_7_SOLID1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_5_2_1_1_1_HDR_F2X6_2_5_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_4_2_1_1_1_HDR_F2X6_2_4_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_GSB311231HR_1_GSB311231HR_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260__010_IMPELLER__010_IMPELLER.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_GSB311231HR_4_GSB311231HR_4.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_T_XX_XX_XX_1_SOLID1_2_JSOM_T_XX_XX_XX_1_SOLID1_2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_7_2_1_1_1_HDR_F2X6_2_7_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_12_2_1_1_1_HDR_F2X6_2_12_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_B_XX_XX_XX_1_SOLID1_1_JSOM_B_XX_XX_XX_1_SOLID1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_9_2_1_1_1_HDR_F2X6_2_9_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_CONN_STW_SS_53000_001_CONN_STW_SS_53000_001.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_P1_P1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_CARRIER_BOARD_OUTLINE_CARRIER_BOARD_OUTLINE.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_2_2_1_1_1_HDR_F2X6_2_2_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_B_XX_XX_XX_1_SOLID1_2_JSOM_B_XX_XX_XX_1_SOLID1_2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_T_XX_XX_XX_1_SOLID1_3_JSOM_T_XX_XX_XX_1_SOLID1_3.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_1_2_1_1_1_HDR_F2X6_2_1_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_USER_LIBRARY_LQFP64_GRID_463338_USER_LIBRARY_LQFP64_GRID_463338.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_B_XX_XX_XX_1_SOLID1_3_JSOM_B_XX_XX_XX_1_SOLID1_3.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_10_2_1_1_1_HDR_F2X6_2_10_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_6_2_1_1_1_HDR_F2X6_2_6_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_GSB311231HR_1_1_GSB311231HR_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260__72720001_7__72720001_7.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_SOIC127P600X175_8_SOIC127P600X175_8.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_CHIP_18536_CHIP_18536.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260__78321420_1__78321420_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_BODY_QFN_114_BODY_QFN_114.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_GSB311231HR_ASM_GSB311231HR_ASM.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_PC104_SN_XX_XX_7_SOLID1_1_PC104_SN_XX_XX_7_SOLID1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_L829_1J1T_43_1_3_2_1_1_1_L829_1J1T_43_1_3_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_B_XX_XX_XX_1_SOLID1_JSOM_B_XX_XX_XX_1_SOLID1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_PC104_SN_XX_XX_7_SOLID1_3_PC104_SN_XX_XX_7_SOLID1_3.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HEATSINK_HEATSINK.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_3_2_1_1_1_HDR_F2X6_2_3_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_13_2_1_1_1_HDR_F2X6_2_13_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260__22112022_1__22112022_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_L829_1J1T_43_1_ASM_2_ASM_1_ASM__ASM_L829_1J1T_43_1_ASM_2_ASM_1_ASM__ASM.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_11_2_1_1_1_HDR_F2X6_2_11_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_BGA172C80P14X14_1215X1215X170_BGA172C80P14X14_1215X1215X170.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.1290878 -0.0754375 0.0211027" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_BGA120C50X50P12X12_660X660X80_BGA120C50X50P12X12_660X660X80.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_HDR_F2X6_2_8_2_1_1_1_HDR_F2X6_2_8_2_1_1_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/GSB311231HR_ASM_01_GSB311231HR_ASM.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_FANCOVER_FANCOVER.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_JSOM_T_XX_XX_XX_1_SOLID1_JSOM_T_XX_XX_XX_1_SOLID1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_COVER_COVER.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0619263 -0.0378455 0.0480186" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/kria_kv260/kria_kv_260_CUI_PJ_202AH_CUI_PJ_202AH.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0530836 -0.0858685 0.0004409" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.0530836 -0.0635145 -0.001559 " rpy="-1.5707964 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 -0.0858544 0.0004409" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0469164 -0.0635145 -0.001559 " rpy="-1.5707964 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="r_hip">
+    <inertial>
+      <origin xyz="-0.01698114 0. 0.06743173" rpy="0. 0. 0."/>
+      <mass value="0.07053"/>
+      <inertia ixx="0.00046884" ixy="0." ixz="0.00006465" iyy="0.00050078" iyz="0." izz="0.00004576"/>
+    </inertial>
+    <visual>
+      <origin xyz="0. -0. 0." rpy="1.5707964 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/hip_connector.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="l_hip">
+    <inertial>
+      <origin xyz="-0.01698114 0. -0.06743173" rpy="0. 0. 0."/>
+      <mass value="0.07053"/>
+      <inertia ixx="0.00046884" ixy="0." ixz="-0.00006465" iyy="0.00050078" iyz="0." izz="0.00004576"/>
+    </inertial>
+    <visual>
+      <origin xyz="0. -0. -0." rpy="-1.5707964 0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/hip_connector.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="l_arm">
+    <inertial>
+      <origin xyz="-0.05958267 0.00731529 0.01658506" rpy="0. 0. 0."/>
+      <mass value="0.82572217"/>
+      <inertia ixx="0.00081593" ixy="0.00070611" ixz="0.00081583" iyy="0.00633455" iyz="-0.00010248" izz="0.00652132"/>
+    </inertial>
+    <collision>
+      <origin xyz="-0.059147 0.0160712 0.01887 " rpy="1.293073 -1.5707964 0. "/>
+      <geometry>
+        <box size="0.0455878 0.1951695 0.0797575"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0. 0. 0.0395" rpy="1.5707964 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0. 0.01715" rpy="3.1415927 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0. 0.041" rpy="-1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/l_arm_L_Arm_Top_Cover_L_Arm_Top_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.119007 0.0154056 0.0395 " rpy="1.3089969 -1.5707963 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.119007 0.0154056 0.01715 " rpy="3.1415927 0. -1.8325957"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.0000129 0. 0.021 " rpy="-1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/l_arm_L_Arm_L_Arm.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="l_foot">
+    <inertial>
+      <origin xyz="0.01329791 0.02231079 0.01099755" rpy="0. 0. 0."/>
+      <mass value="0.04745"/>
+      <inertia ixx="0.0000866" ixy="-0.00001806" ixz="-0.00000696" iyy="0.00002911" iyz="-0.00001165" izz="0.00008895"/>
+    </inertial>
+    <collision>
+      <origin xyz="0.0277056 0.0127352 0.01143 " rpy="-2.8192303 1.5707964 0. "/>
+      <geometry>
+        <box size="0.036 0.1227169 0.0099255"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0. 0.029 0.029" rpy="-3.1415927 1.5707963 0. "/>
+      <geometry>
+        <mesh filename="meshes/l_foot_Foot_New_1_Foot_New_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.029 -0. -0.007" rpy="1.5707964 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/l_foot_Foot_New_2_Foot_New_2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="l_forearm">
+    <inertial>
+      <origin xyz="0.00798708 0.10925043 -0.01694463" rpy="0. 0. 0."/>
+      <mass value="0.11351157"/>
+      <inertia ixx="0.0020294" ixy="-0.00016888" ixz="0.00001588" iyy="0.00007282" iyz="0.00021613" izz="0.00202792"/>
+    </inertial>
+    <collision>
+      <origin xyz="-0.0030734 0.0774761 -0.01793 " rpy="1.5765638 -1.5707963 0. "/>
+      <geometry>
+        <box size="0.0174227 0.0354954 0.186567 "/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0065" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Inner__2x28x8mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0065" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Outer__2x28x8mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0065" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Cover__2x28x8mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0. -0. -0.0085" rpy="1.5707964 -0. -0. "/>
+      <geometry>
+        <mesh filename="meshes/l_forearm_L_Forearm_L_Forearm.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0205" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Inner__2x28x8mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0205" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Outer__2x28x8mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 -0.0205" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Cover__2x28x8mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="r_arm">
+    <inertial>
+      <origin xyz="-0.05956345 0.00725771 -0.01639736" rpy="0. 0. 0."/>
+      <mass value="0.84232217"/>
+      <inertia ixx="0.00083429" ixy="0.00071494" ixz="-0.00082221" iyy="0.00644595" iyz="0.00010286" izz="0.00664765"/>
+    </inertial>
+    <collision>
+      <origin xyz="-0.059147 0.0160712 -0.0191464" rpy="1.293073 -1.5707964 0. "/>
+      <geometry>
+        <box size="0.0455878 0.1951695 0.0797575"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.0000129 0. -0.021 " rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/r_arm_R_Arm_R_Arm.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0. -0.041" rpy="1.5707964 0. 0. "/>
+      <geometry>
+        <mesh filename="meshes/r_arm_R_Arm_Top_Cover_R_Arm_Top_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0. -0.0395" rpy="1.5707964 1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0. -0.01715" rpy="0. 0. -1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.119007 0.0154056 -0.0395 " rpy="1.8325957 1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/body_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0.119007 0.0154056 -0.01715 " rpy="0. 0. -1.8325957"/>
+      <geometry>
+        <mesh filename="meshes/ak60_6/cover_ak60_6.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="r_foot">
+    <inertial>
+      <origin xyz="0.01329791 0.02231079 -0.01100245" rpy="0. 0. 0."/>
+      <mass value="0.04745"/>
+      <inertia ixx="0.0000866" ixy="-0.00001806" ixz="0.00000692" iyy="0.00002911" iyz="0.00001164" izz="0.00008895"/>
+    </inertial>
+    <collision>
+      <origin xyz="0.0273844 0.0133017 -0.0111505" rpy="-2.8217785 1.5707964 0. "/>
+      <geometry>
+        <box size="0.036 0.1227169 0.0099255"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.029 0. -0.029" rpy="1.5707964 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="meshes/r_foot_Foot_New_2_Foot_New_2.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0. 0.029 0.007" rpy="-3.1415927 1.5707963 0. "/>
+      <geometry>
+        <mesh filename="meshes/r_foot_Foot_New_1_Foot_New_1.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="r_forearm">
+    <inertial>
+      <origin xyz="0.00798708 0.10925043 0.01694463" rpy="0. 0. 0."/>
+      <mass value="0.11351157"/>
+      <inertia ixx="0.0020294" ixy="-0.00016888" ixz="-0.00001588" iyy="0.00007282" iyz="-0.00021613" izz="0.00202792"/>
+    </inertial>
+    <collision>
+      <origin xyz="-0.0031991 0.0772309 0.01765 " rpy="1.5785186 -1.5707963 0. "/>
+      <geometry>
+        <box size="0.0174227 0.0354954 0.186567 "/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0.02 0.19 0.0285" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Inner__2x28x8mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 0.0285" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Outer__2x28x8mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 0.0285" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Cover__2x28x8mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="-0. -0. 0.0085" rpy="-1.5707964 -0. -0. "/>
+      <geometry>
+        <mesh filename="meshes/r_forearm_R_Forearm_R_Forearm.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 0.0145" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Inner__2x28x8mm_Bearing_Inner.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 0.0145" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Outer__2x28x8mm_Bearing_Outer.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0.02 0.19 0.0145" rpy="-1.5707964 -0. 1.5707964"/>
+      <geometry>
+        <mesh filename="meshes/bearing28x8/forearm_bearing_12x28x8mm__2x28x8mm_Bearing_Cover__2x28x8mm_Bearing_Cover.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+  </link>
+</robot>
