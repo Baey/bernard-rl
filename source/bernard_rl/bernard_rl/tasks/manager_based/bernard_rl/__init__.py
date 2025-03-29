@@ -1,7 +1,7 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 import gymnasium as gym
@@ -14,7 +14,7 @@ from . import agents
 
 
 gym.register(
-    id="Template-Bernard-Rl-v0",
+    id="Isaac-Bernard-Rough-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={

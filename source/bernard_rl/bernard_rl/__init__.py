@@ -1,7 +1,8 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
+
 
 """
 Python module with BERNARD RL extension.

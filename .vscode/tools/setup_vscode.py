@@ -1,7 +1,7 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 """This script sets up the vs-code settings for the Isaac Lab project.
