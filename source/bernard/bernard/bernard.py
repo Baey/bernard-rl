@@ -1,7 +1,8 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
+
 
 """Configuration for BERNARD bipedal robot.
 
@@ -22,8 +23,8 @@ from isaaclab.assets.articulation import ArticulationCfg
 # Configuration
 ##
 
-BERNARD_MODEL_DIR = os.path.join(os.path.curdir, "data")
-BERNARD_MODEL_PATH = os.path.join(BERNARD_MODEL_DIR, "bernard.urdf")
+BERNARD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "data", "bernard")
+BERNARD_MODEL_PATH = os.path.join(BERNARD_MODEL_DIR, "bernard.usd")
 
 BERNARD_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
@@ -39,7 +40,7 @@ BERNARD_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=4, solver_velocity_iteration_count=0
+            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
@@ -63,18 +64,18 @@ BERNARD_CFG = ArticulationCfg(
             effort_limit_sim=9.0,
             velocity_limit_sim=10.0,
             stiffness={
-                ".*": 1.0,
+                ".*": 1.8,
             },
             damping={".*": 0.1},
         ),
-        "passive": ImplicitActuatorCfg(
-            joint_names_expr=[".*_foot_.*"],
-            effort_limit_sim=0.0,
-            velocity_limit_sim=0.0,
-            stiffness={
-                ".*": 0.0,
-            },
-            damping={".*": 0.05},
-        ),
+        # "passive": ImplicitActuatorCfg(
+        #     joint_names_expr=[".*_foot_.*"],
+        #     effort_limit_sim=0.0,
+        #     velocity_limit_sim=0.0,
+        #     stiffness={
+        #         ".*": 0.0,
+        #     },
+        #     damping={".*": 0.05},
+        # ),
     },
 )

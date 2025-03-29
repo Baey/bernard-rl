@@ -1,7 +1,7 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 import torch
 from isaaclab.assets import Articulation
 from isaaclab.managers import SceneEntityCfg
+from isaaclab.sensors import ContactSensor
 from isaaclab.utils.math import wrap_to_pi
 
 if TYPE_CHECKING:
@@ -25,3 +26,25 @@ def joint_pos_target_l2(env: ManagerBasedRLEnv, target: float, asset_cfg: SceneE
     joint_pos = wrap_to_pi(asset.data.joint_pos[:, asset_cfg.joint_ids])
     # compute the reward
     return torch.sum(torch.square(joint_pos - target), dim=1)
+
+
+def feet_air_time_positive_biped(env, command_name: str, threshold: float, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Reward long steps taken by the feet for bipeds.
+
+    This function rewards the agent for taking steps up to a specified threshold and also keep one foot at
+    a time in the air.
+
+    If the commands are small (i.e. the agent is not supposed to take a step), then the reward is zero.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    # compute the reward
+    air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+    contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+    in_contact = contact_time > 0.0
+    in_mode_time = torch.where(in_contact, contact_time, air_time)
+    single_stance = torch.sum(in_contact.int(), dim=1) == 1
+    reward = torch.min(torch.where(single_stance.unsqueeze(-1), in_mode_time, 0.0), dim=1)[0]
+    reward = torch.clamp(reward, max=threshold)
+    # no reward for zero command
+    reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) > 0.1
+    return reward
