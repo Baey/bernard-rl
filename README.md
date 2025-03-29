@@ -1,16 +1,15 @@
-# Template for Isaac Lab Projects
+# Bernard: Bipedal Experimental RL-based Neuromorphic Autonomous Reconfigurable Droid
 
 ## Overview
 
-This project/repository serves as a template for building projects or extensions based on Isaac Lab.
-It allows you to develop in an isolated environment, outside of the core Isaac Lab repository.
+This project is developed as part of a master's thesis at AGH University of Krakow. It serves as an extension for IsaacLab, implementing the BERNARD bipedal robot and its reinforcement learning environment. IsaacLab is an extension of IsaacSim, designed for simulating and training robotic systems.
 
 **Key Features:**
 
 - `Isolation` Work outside the core Isaac Lab repository, ensuring that your development efforts remain self-contained.
 - `Flexibility` This template is set up to allow your code to be run as an extension in Omniverse.
 
-**Keywords:** extension, template, isaaclab
+**Keywords:** extension, bernard, isaaclab, isaacsim
 
 ## Installation
 
