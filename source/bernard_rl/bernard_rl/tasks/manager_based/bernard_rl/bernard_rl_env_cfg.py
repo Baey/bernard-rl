@@ -61,12 +61,14 @@ class BernardSceneCfg(InteractiveSceneCfg):
     # robot
     robot: ArticulationCfg = BERNARD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-    feet_contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*foot", history_length=6, track_air_time=True, debug_vis=True
-    )
+    # contact sensors
     body_contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/body", history_length=6, track_air_time=False, debug_vis=True
+        prim_path="{ENV_REGEX_NS}/Robot/body", history_length=6, track_air_time=False,  # filter_prim_paths_expr=["{ENV_REGEX_NS}/Robot/.*"]
     )
+    feet_contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*foot", history_length=6, track_air_time=True, debug_vis=False,
+    )
+
     imu = ImuCfg(prim_path="{ENV_REGEX_NS}/Robot/body", debug_vis=True, update_period=0.01)
     # lights
     sky_light = AssetBaseCfg(
@@ -106,7 +108,7 @@ class ActionsCfg:
     """Action specifications for the MDP."""
 
     joint_pos = mdp.JointEffortActionCfg(
-        asset_name="robot", joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"], scale=1.0, debug_vis=True
+        asset_name="robot", joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"], scale=4.0, debug_vis=True
     )
 
 
@@ -132,8 +134,9 @@ class ObservationsCfg:
         actions = ObsTerm(func=mdp.last_action)
         contact_forces = ObsTerm(
             func=mdp.feet_contact_forces,
-            params={"sensor_cfg": SceneEntityCfg("feet_contact_forces", body_names=".*foot")},
+            params={"threshold": 1.0, "sensor_cfg": SceneEntityCfg("feet_contact_forces", body_names=".*foot")},
             noise=Unoise(n_min=-0.1, n_max=0.1),
+            scale=0.02,
             clip=(0.0, 1.0),
         )
         # height_scan = ObsTerm(
@@ -268,7 +271,7 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="body"), "threshold": 1.0},
+        params={"sensor_cfg": SceneEntityCfg("body_contact_forces", body_names="body"), "threshold": 1.0},
     )
 
 
@@ -312,8 +315,10 @@ class BernardRlEnvCfg(ManagerBasedRLEnvCfg):
         # we tick all the sensors based on the smallest update period (physics update period)
         # if self.scene.height_scanner is not None:
         #     self.scene.height_scanner.update_period = self.decimation * self.sim.dt
-        if self.scene.contact_forces is not None:
-            self.scene.contact_forces.update_period = self.sim.dt
+        if self.scene.body_contact_forces is not None:
+            self.scene.body_contact_forces.update_period = self.sim.dt
+        if self.scene.feet_contact_forces is not None:
+            self.scene.feet_contact_forces.update_period = self.sim.dt
 
         # check if terrain levels curriculum is enabled - if so, enable curriculum for terrain generator
         # this generates terrains with increasing difficulty and is useful for training

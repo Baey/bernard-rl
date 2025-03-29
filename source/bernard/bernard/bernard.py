@@ -40,7 +40,7 @@ BERNARD_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=0
+            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=1
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
@@ -61,7 +61,7 @@ BERNARD_CFG = ArticulationCfg(
     actuators={
         "ak60_6": ImplicitActuatorCfg(
             joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
-            effort_limit_sim=9.0,
+            effort_limit_sim=4.0,
             velocity_limit_sim=10.0,
             stiffness={
                 ".*": 1.8,
