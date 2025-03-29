@@ -1,7 +1,8 @@
 # Copyright (c) 2025, Błażej Szargut.
 # All rights reserved.
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
+
 
 """Common functions that can be used to create curriculum for the learning environment.
 
@@ -10,7 +11,6 @@ the curriculum introduced by the function.
 """
 
 from __future__ import annotations
-
 import torch
 from collections.abc import Sequence
 from typing import TYPE_CHECKING

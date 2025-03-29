@@ -29,10 +29,9 @@ simulation_app = app_launcher.app
 
 """Rest everything follows."""
 
+import bernard_rl.tasks  # noqa: F401
 import gymnasium as gym
 import torch
-
-import bernard_rl.tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
 

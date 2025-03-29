@@ -61,8 +61,11 @@ class BernardSceneCfg(InteractiveSceneCfg):
     # robot
     robot: ArticulationCfg = BERNARD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
-    contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True, debug_vis=True
+    feet_contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*foot", history_length=6, track_air_time=True, debug_vis=True
+    )
+    body_contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/body", history_length=6, track_air_time=False, debug_vis=True
     )
     imu = ImuCfg(prim_path="{ENV_REGEX_NS}/Robot/body", debug_vis=True, update_period=0.01)
     # lights
@@ -102,8 +105,8 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointPositionActionCfg(
-        asset_name="robot", joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"], scale=9.0, use_default_offset=True
+    joint_pos = mdp.JointEffortActionCfg(
+        asset_name="robot", joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"], scale=1.0, debug_vis=True
     )
 
 
@@ -127,6 +130,12 @@ class ObservationsCfg:
         joint_pos = ObsTerm(func=mdp.joint_pos_limit_normalized, noise=Unoise(n_min=-0.01, n_max=0.01))
         joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-1.5, n_max=1.5))
         actions = ObsTerm(func=mdp.last_action)
+        contact_forces = ObsTerm(
+            func=mdp.feet_contact_forces,
+            params={"sensor_cfg": SceneEntityCfg("feet_contact_forces", body_names=".*foot")},
+            noise=Unoise(n_min=-0.1, n_max=0.1),
+            clip=(0.0, 1.0),
+        )
         # height_scan = ObsTerm(
         #     func=mdp.height_scan,
         #     params={"sensor_cfg": SceneEntityCfg("height_scanner")},
