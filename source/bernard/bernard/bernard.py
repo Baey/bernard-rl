@@ -16,8 +16,9 @@ Reference: https://github.com/UMich-BipedLab/Cassie_Model/blob/master/urdf/cassi
 import os
 
 import isaaclab.sim as sim_utils
-from isaaclab.actuators import ImplicitActuatorCfg
+from isaaclab.actuators import ActuatorNetLSTMCfg
 from isaaclab.assets.articulation import ArticulationCfg
+from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
 ##
 # Configuration
@@ -59,15 +60,22 @@ BERNARD_CFG = ArticulationCfg(
     ),
     soft_joint_pos_limit_factor=0.9,
     actuators={
-        "ak60_6": ImplicitActuatorCfg(
+        # "ak60_6": ImplicitActuatorCfg(
+        #     joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
+        #     effort_limit_sim=9.0,
+        #     velocity_limit_sim=10.0,
+        #     stiffness={
+        #         ".*": 2.5,
+        #     },
+        #     damping={".*": 0.05},
+        # ),
+        "ak60_6": ActuatorNetLSTMCfg(
             joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
-            effort_limit_sim=4.0,
-            velocity_limit_sim=10.0,
-            stiffness={
-                ".*": 1.8,
-            },
-            damping={".*": 0.1},
-        ),
+            network_file=f"{ISAACLAB_NUCLEUS_DIR}/ActuatorNets/ANYbotics/anydrive_3_lstm_jit.pt",
+            saturation_effort=120.0,
+            effort_limit=80.0,
+            velocity_limit=7.5,
+        )
         # "passive": ImplicitActuatorCfg(
         #     joint_names_expr=[".*_foot_.*"],
         #     effort_limit_sim=0.0,

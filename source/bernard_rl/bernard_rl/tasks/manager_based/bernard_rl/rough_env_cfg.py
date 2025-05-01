@@ -16,7 +16,7 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors import ContactSensorCfg, ImuCfg
+from isaaclab.sensors import ContactSensorCfg, ImuCfg, RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG
 from isaaclab.utils import configclass
@@ -57,19 +57,47 @@ class BernardSceneCfg(InteractiveSceneCfg):
         ),
         debug_vis=False,
     )
+    terrain.terrain_generator.sub_terrains["boxes"].grid_height_range = (0.025, 0.1)
+    terrain.terrain_generator.sub_terrains["random_rough"].noise_range = (0.01, 0.06)
+    terrain.terrain_generator.sub_terrains["random_rough"].noise_step = 0.01
 
     # robot
     robot: ArticulationCfg = BERNARD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
     # contact sensors
-    body_contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/body", history_length=6, track_air_time=False,  # filter_prim_paths_expr=["{ENV_REGEX_NS}/Robot/.*"]
+    contact_forces = ContactSensorCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/.*",
+        history_length=6,
+        track_air_time=True,  # filter_prim_paths_expr=["{ENV_REGEX_NS}/Robot/.*"]
     )
-    feet_contact_forces = ContactSensorCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/.*foot", history_length=6, track_air_time=True, debug_vis=False,
+    # feet_contact_forces = ContactSensorCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/.*foot",
+    #     history_length=6,
+    #     track_air_time=True,
+    #     debug_vis=False,
+    # )
+    # legs_contact_forces = ContactSensorCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/.*forearm",
+    #     history_length=6,
+    #     track_air_time=False,
+    #     debug_vis=False,
+    # )
+
+    height_scanner = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/body",
+        offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, -0.1)),
+        attach_yaw_only=True,
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.2, size=[0.6, 0.6]),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
     )
 
-    imu = ImuCfg(prim_path="{ENV_REGEX_NS}/Robot/body", debug_vis=True, update_period=0.01)
+    imu = ImuCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/body",
+        debug_vis=True,
+        update_period=0.01,
+        # offset=ImuCfg.OffsetCfg(pos=(-0.07007606, -0.07839134, -0.23643290)),
+    )
     # lights
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
@@ -94,11 +122,14 @@ class CommandsCfg:
         resampling_time_range=(5.0, 10.0),
         rel_standing_envs=0.1,
         rel_heading_envs=1.0,
-        heading_command=True,
+        heading_command=False,
         heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.3, 0.3), lin_vel_y=(-0.3, 0.3), ang_vel_z=(-0.3, 0.3), heading=(-math.pi, math.pi)
+            lin_vel_x=(-1.5, 1.5),
+            lin_vel_y=(-1.5, 1.5),
+            ang_vel_z=(0.0, 0.0),
+            heading=(-math.pi, math.pi),
         ),
     )
 
@@ -107,9 +138,14 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    joint_pos = mdp.JointEffortActionCfg(
-        asset_name="robot", joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"], scale=4.0, debug_vis=True
-    )
+    joint_pos = mdp.JointPositionActionCfg(asset_name="robot", joint_names=[".*_hip.*", ".*_arm.*", ".*_knee.*"], scale=0.5, use_default_offset=True)
+
+    # joint_pos = mdp.JointEffortActionCfg(
+    #     asset_name="robot",
+    #     joint_names=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
+    #     scale=9.0,
+    #     debug_vis=True,
+    # )
 
 
 @configclass
@@ -121,30 +157,45 @@ class ObservationsCfg:
         """Observations for policy group."""
 
         # observation terms (order preserved)
-        base_lin_acc = ObsTerm(func=mdp.imu_lin_acc, noise=Unoise(n_min=-0.1, n_max=0.1))
-        base_ang_vel = ObsTerm(func=mdp.imu_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
-        base_orientation = ObsTerm(func=mdp.imu_orientation, noise=Unoise(n_min=-0.1, n_max=0.1))
+        base_lin_acc = ObsTerm(
+            func=mdp.imu_lin_acc, noise=Unoise(n_min=-0.01, n_max=0.01)
+        )
+        base_ang_vel = ObsTerm(
+            func=mdp.imu_ang_vel, noise=Unoise(n_min=-0.02, n_max=0.02)
+        )
+        base_orientation = ObsTerm(
+            func=mdp.imu_orientation, noise=Unoise(n_min=-0.01, n_max=0.01)
+        )
         projected_gravity = ObsTerm(
             func=mdp.projected_gravity,
             noise=Unoise(n_min=-0.05, n_max=0.05),
         )
-        velocity_commands = ObsTerm(func=mdp.generated_commands, params={"command_name": "base_velocity"})
-        joint_pos = ObsTerm(func=mdp.joint_pos_limit_normalized, noise=Unoise(n_min=-0.01, n_max=0.01))
+        velocity_commands = ObsTerm(
+            func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
+        joint_pos = ObsTerm(
+            func=mdp.joint_pos_limit_normalized, noise=Unoise(n_min=-0.01, n_max=0.01)
+        )
         joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-1.5, n_max=1.5))
         actions = ObsTerm(func=mdp.last_action)
         contact_forces = ObsTerm(
             func=mdp.feet_contact_forces,
-            params={"threshold": 1.0, "sensor_cfg": SceneEntityCfg("feet_contact_forces", body_names=".*foot")},
+            params={
+                "threshold": 1.0,
+                "sensor_cfg": SceneEntityCfg(
+                    "contact_forces", body_names=".*foot"
+                ),
+            },
             noise=Unoise(n_min=-0.1, n_max=0.1),
             scale=0.02,
             clip=(0.0, 1.0),
         )
-        # height_scan = ObsTerm(
-        #     func=mdp.height_scan,
-        #     params={"sensor_cfg": SceneEntityCfg("height_scanner")},
-        #     noise=Unoise(n_min=-0.1, n_max=0.1),
-        #     clip=(-1.0, 1.0),
-        # )
+        height_scan = ObsTerm(
+            func=mdp.height_scan,
+            params={"sensor_cfg": SceneEntityCfg("height_scanner")},
+            noise=Unoise(n_min=-0.01, n_max=0.01),
+            clip=(-1.0, 1.0),
+        )
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -196,7 +247,12 @@ class EventCfg:
         func=mdp.reset_root_state_uniform,
         mode="reset",
         params={
-            "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14), "z": (-0.7, -0.6)},
+            "pose_range": {
+                "x": (-0.5, 0.5),
+                "y": (-0.5, 0.5),
+                "yaw": (-3.14, 3.14),
+                "z": (-0.7, -0.6),
+            },
             "velocity_range": {
                 "x": (-0.01, 0.01),
                 "y": (-0.01, 0.01),
@@ -232,36 +288,49 @@ class RewardsCfg:
 
     # -- task
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp, weight=1.0, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_lin_vel_xy_exp,
+        weight=7.5,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp, weight=0.1, params={"command_name": "base_velocity", "std": math.sqrt(0.25)}
+        func=mdp.track_ang_vel_z_exp,
+        weight=0.5,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
 
-    # feet_air_time = RewTerm(
-    #     func=mdp.feet_air_time_positive_biped,
-    #     weight=0.125,
-    #     params={
-    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
-    #         "command_name": "base_velocity",
-    #         "threshold": 0.5,
-    #     },
-    # )
+    feet_air_time = RewTerm(
+        func=mdp.feet_air_time_positive_biped,
+        weight=0.1,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
+            "command_name": "base_velocity",
+            "threshold": 0.3,
+        },
+    )
 
     # -- penalties
-    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
-    ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
-    dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-1.0e-5)
-    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
-    # undesired_contacts = RewTerm(
-    #     func=mdp.undesired_contacts,
-    #     weight=-1.0,
-    #     params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*forearm"), "threshold": 1.0},
-    # )
-    # -- optional penalties
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=0.0)
-    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=0.0)
+    lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-1.0)
+    base_height_l2 = RewTerm(func=mdp.base_height_l2, params={"target_height": 0.45}, weight=-10.5)
+    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-10.0)
+    # ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
+    dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-3.0e-6)
+    dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-3.5e-9)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1.0e-3)
+    undesired_contacts = RewTerm(
+        func=mdp.undesired_contacts,
+        weight=-3.0,
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*forearm.*|.*arm.*"), "threshold": 1.0},
+    )
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-7.0e-2)
+    dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-1.5)
+    feet_slide = RewTerm(
+        func=mdp.feet_slide,
+        weight=-1.e-2,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*foot.*"),
+        },
+    )
 
 
 @configclass
@@ -271,7 +340,10 @@ class TerminationsCfg:
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
-        params={"sensor_cfg": SceneEntityCfg("body_contact_forces", body_names="body"), "threshold": 1.0},
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names="body"),
+            "threshold": 1.0,
+        },
     )
 
 
@@ -288,7 +360,7 @@ class CurriculumCfg:
 
 
 @configclass
-class BernardRlEnvCfg(ManagerBasedRLEnvCfg):
+class BernardRoughEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
     scene: BernardSceneCfg = BernardSceneCfg(num_envs=128, env_spacing=2.5)
     # Basic settings
@@ -313,12 +385,10 @@ class BernardRlEnvCfg(ManagerBasedRLEnvCfg):
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
         # update sensor update periods
         # we tick all the sensors based on the smallest update period (physics update period)
-        # if self.scene.height_scanner is not None:
-        #     self.scene.height_scanner.update_period = self.decimation * self.sim.dt
-        if self.scene.body_contact_forces is not None:
-            self.scene.body_contact_forces.update_period = self.sim.dt
-        if self.scene.feet_contact_forces is not None:
-            self.scene.feet_contact_forces.update_period = self.sim.dt
+        if self.scene.height_scanner is not None:
+            self.scene.height_scanner.update_period = self.decimation * self.sim.dt
+        if self.scene.contact_forces is not None:
+            self.scene.contact_forces.update_period = self.sim.dt
 
         # check if terrain levels curriculum is enabled - if so, enable curriculum for terrain generator
         # this generates terrains with increasing difficulty and is useful for training
@@ -331,7 +401,7 @@ class BernardRlEnvCfg(ManagerBasedRLEnvCfg):
 
 
 @configclass
-class BernardhRlEnvCfg_PLAY(BernardRlEnvCfg):
+class BernardhRoughEnvCfg_PLAY(BernardRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
