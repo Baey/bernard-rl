@@ -1,9 +1,43 @@
+# Copyright (c) 2025, Błażej Szargut.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+
+"Custom RNN GRU policy and value function networks for skrl."
+
 import torch
 import torch.nn as nn
 from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
 
 
 class Policy(GaussianMixin, Model):
+    """
+    Custom RNN GRU policy network for reinforcement learning.
+
+    This network uses a GRU (Gated Recurrent Unit) to process sequential data and outputs
+    a Gaussian distribution over actions. It is designed for environments with continuous
+    action spaces and supports sequence-based training.
+
+    Args:
+        observation_space (gym.Space): The observation space of the environment.
+        action_space (gym.Space): The action space of the environment.
+        device (torch.device): The device to run the model on (e.g., "cpu" or "cuda").
+        clip_actions (bool): Whether to clip actions to the action space bounds.
+        clip_log_std (bool): Whether to clip the log standard deviation of the Gaussian.
+        min_log_std (float): Minimum value for the log standard deviation.
+        max_log_std (float): Maximum value for the log standard deviation.
+        reduction (str): Reduction method for the Gaussian log probability ("sum" or "mean").
+        num_envs (int): Number of environments in parallel.
+        num_layers (int): Number of GRU layers.
+        hidden_size (int): Number of hidden units in the GRU.
+        sequence_length (int): Length of the input sequence.
+
+    Attributes:
+        gru (nn.GRU): GRU layer for processing sequential data.
+        net (nn.Sequential): Fully connected layers for producing action outputs.
+        log_std_parameter (nn.Parameter): Learnable parameter for the log standard deviation of the Gaussian.
+    """
     def __init__(self, observation_space, action_space, device, clip_actions=False,
                  clip_log_std=True, min_log_std=-20, max_log_std=2, reduction="sum",
                  num_envs=1, num_layers=1, hidden_size=64, sequence_length=128):
@@ -74,6 +108,27 @@ class Policy(GaussianMixin, Model):
 
 
 class Value(DeterministicMixin, Model):
+    """
+    Custom RNN GRU value function network for reinforcement learning.
+
+    This network uses a GRU (Gated Recurrent Unit) to process sequential data and outputs
+    a scalar value representing the expected return for a given state. It is designed for
+    environments with sequential data and supports sequence-based training.
+
+    Args:
+        observation_space (gym.Space): The observation space of the environment.
+        action_space (gym.Space): The action space of the environment (not used for value function).
+        device (torch.device): The device to run the model on (e.g., "cpu" or "cuda").
+        clip_actions (bool): Whether to clip actions (not used for value function).
+        num_envs (int): Number of environments in parallel.
+        num_layers (int): Number of GRU layers.
+        hidden_size (int): Number of hidden units in the GRU.
+        sequence_length (int): Length of the input sequence.
+
+    Attributes:
+        gru (nn.GRU): GRU layer for processing sequential data.
+        net (nn.Sequential): Fully connected layers for producing the value output.
+    """
     def __init__(self, observation_space, action_space, device, clip_actions=False,
                  num_envs=1, num_layers=1, hidden_size=64, sequence_length=128):
         Model.__init__(self, observation_space, action_space, device)
