@@ -72,8 +72,8 @@ BERNARD_CFG = ArticulationCfg(
         "ak60_6": ActuatorNetLSTMCfg(
             joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
             network_file=f"{ISAACLAB_NUCLEUS_DIR}/ActuatorNets/ANYbotics/anydrive_3_lstm_jit.pt",
-            saturation_effort=120.0,
-            effort_limit=80.0,
+            saturation_effort=10.0,
+            effort_limit=9.0,
             velocity_limit=7.5,
         )
         # "passive": ImplicitActuatorCfg(

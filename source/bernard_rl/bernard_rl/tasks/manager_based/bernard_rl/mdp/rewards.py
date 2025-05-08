@@ -65,3 +65,24 @@ def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = Scen
     body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
     reward = torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
     return reward
+
+
+def both_feet_off_ground(env, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Penalize the agent when both feet are off the ground.
+
+    This function computes a penalty when neither foot is in contact with the ground. The penalty is applied
+    based on the number of feet off the ground.
+
+    Args:
+        env: The environment instance.
+        sensor_cfg: Configuration for the contact sensor.
+
+    Returns:
+        A tensor containing the penalty for each agent in the environment.
+    """
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+    in_contact = contact_time > 0.0
+    both_feet_off_ground = torch.sum(in_contact.int(), dim=1) == 0
+    reward = both_feet_off_ground.int()
+    return reward
