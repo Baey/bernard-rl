@@ -47,7 +47,7 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.flat_env_cfg:BernardFlatEnvCfg",
-        "skrl_gru_ppo_cfg_entry_point": f"{agents.__name__}:skrl_gru_ppo_cfg.yaml",
+        "skrl_rnn_ppo_cfg_entry_point": f"{agents.__name__}:skrl_rnn_ppo_cfg.yaml",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
         "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
         "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",

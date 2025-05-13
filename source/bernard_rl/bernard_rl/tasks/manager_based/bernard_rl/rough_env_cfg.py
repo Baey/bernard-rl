@@ -289,7 +289,7 @@ class RewardsCfg:
     # -- helpers
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
-        weight=0.25,
+        weight=0.15,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
             "command_name": "base_velocity",
@@ -298,7 +298,7 @@ class RewardsCfg:
     )
     alive = RewTerm(
         func=mdp.is_alive,
-        weight=2.0,
+        weight=2.5,
     )
 
     # -- penalties
@@ -319,7 +319,7 @@ class RewardsCfg:
     dof_pos_limits = RewTerm(func=mdp.joint_pos_limits, weight=-3.2)
     feet_slide = RewTerm(
         func=mdp.feet_slide,
-        weight=-5.5e-2,
+        weight=-6.5e-2,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
             "asset_cfg": SceneEntityCfg("robot", body_names=".*foot.*"),
@@ -327,7 +327,7 @@ class RewardsCfg:
     )
     feet_off_ground = RewTerm(
         func=mdp.both_feet_off_ground,
-        weight=-0.5,
+        weight=-0.6,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
         }

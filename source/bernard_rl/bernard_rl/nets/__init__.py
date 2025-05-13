@@ -7,3 +7,4 @@
 """Package containing custom policies and value functions networks for the bernard_rl extension."""
 
 from .rnn import gru
+from .rnn import lstm

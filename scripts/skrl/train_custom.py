@@ -81,8 +81,21 @@ if version.parse(skrl.__version__) < version.parse(SKRL_VERSION):
 if args_cli.architecture.startswith("GRU"):
     from bernard_rl.nets.rnn.gru import Policy, Value
 elif args_cli.architecture.startswith("LSTM"):
+    from bernard_rl.nets.rnn.lstm import Policy, Value
+else:
     raise NotImplementedError(
-        f"Architecture {args_cli.architecture} not supported. Currently only GRU is supported."
+        f"Architecture {args_cli.architecture} not supported. Currently only GRU and LSTM are supported."
+    )
+
+if args_cli.ml_framework.startswith("torch"):
+    from skrl.agents.torch.ppo import PPO_RNN as PPO
+    from skrl.memories.torch import RandomMemory
+    from skrl.resources.preprocessors.torch import RunningStandardScaler
+    from skrl.trainers.torch import SequentialTrainer
+    from skrl.resources.schedulers.torch import KLAdaptiveLR
+elif args_cli.ml_framework.startswith("jax"):
+    raise NotImplementedError(
+        f"ML framework {args_cli.ml_framework} not supported. Currently only torch is supported."
     )
 
 import bernard_rl.tasks  # noqa: F401
@@ -100,21 +113,14 @@ from isaaclab.utils.io import dump_pickle, dump_yaml
 from isaaclab_rl.skrl import SkrlVecEnvWrapper
 from isaaclab_tasks.utils.hydra import hydra_task_config
 
-# import the skrl components to build the RL system
-from skrl.agents.torch.ppo import PPO_RNN as PPO
-from skrl.memories.torch import RandomMemory
-from skrl.resources.preprocessors.torch import RunningStandardScaler
-from skrl.trainers.torch import SequentialTrainer
-from skrl.resources.schedulers.torch import KLAdaptiveLR
-
 # config shortcuts
 algorithm = args_cli.algorithm.lower()
 architecture = args_cli.architecture.lower()
-if architecture in ["gru"]:
-    agent_cfg_entry_point = "skrl_gru_ppo_cfg_entry_point"
+if architecture in ["gru", "lstm"]:
+    agent_cfg_entry_point = "skrl_rnn_ppo_cfg_entry_point"
 else:
     raise NotImplementedError(
-        f"Architecture {architecture} not supported. Currently only GRU is supported."
+        f"Architecture {architecture} not supported. Currently only GRU and LSTM are supported."
     )
 
 
@@ -231,6 +237,8 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             "device": env.device,
         }
         agent_cfg["agent"]["state_preprocessor"] = RunningStandardScaler
+    else:
+        agent_cfg["agent"]["state_preprocessor"] = None
 
     if agent_cfg["agent"]["value_preprocessor"] == "RunningStandardScaler":
         agent_cfg["agent"]["value_preprocessor_kwargs"] = {
@@ -238,12 +246,16 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
             "device": env.device,
         }
         agent_cfg["agent"]["value_preprocessor"] = RunningStandardScaler
+    else:
+        agent_cfg["agent"]["value_preprocessor"] = None
 
     if agent_cfg["agent"]["learning_rate_scheduler"] == "KLAdaptiveLR":
         agent_cfg["agent"]["learning_rate_scheduler_kwargs"] = {
             "kl_threshold": agent_cfg["agent"]["learning_rate_scheduler_kwargs"]["kl_threshold"],
         }
         agent_cfg["agent"]["learning_rate_scheduler"] = KLAdaptiveLR
+    else:
+        agent_cfg["agent"]["learning_rate_scheduler"] = None
 
     # configure and instantiate the RL agent
     # https://skrl.readthedocs.io/en/latest/intro/examples.html#gymnasium-gym-environments
