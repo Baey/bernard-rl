@@ -69,3 +69,13 @@ gym.register(
         "skrl_amp_cfg_entry_point": f"{agents.__name__}:skrl_amp_cfg.yaml",
     },
 )
+
+gym.register(
+    id="Isaac-Bernard-Standing-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.standing_env_cfg:BernardStandingEnvCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_standing_cfg.yaml",
+    },
+)

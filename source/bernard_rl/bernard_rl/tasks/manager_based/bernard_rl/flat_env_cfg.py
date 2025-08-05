@@ -22,8 +22,8 @@ class BernardFlatEnvCfg(BernardRoughEnvCfg):
         self.scene.terrain.terrain_type = "plane"
         self.scene.terrain.terrain_generator = None
         # no height scan
-        self.scene.height_scanner = None
-        self.observations.policy.height_scan = None
+        # self.scene.height_scanner = None
+        # self.observations.policy.height_scan = None
         # no terrain curriculum
         self.curriculum.terrain_levels = None
 
@@ -34,10 +34,14 @@ class BernardFlatEnvCfg_PLAY(BernardFlatEnvCfg):
         super().__post_init__()
 
         # make a smaller scene for play
-        self.scene.num_envs = 50
+        self.scene.num_envs = 16
         self.scene.env_spacing = 2.5
         # disable randomization for play
         self.observations.policy.enable_corruption = False
         # remove random pushing event
         # self.events.base_external_force_torque = None
-        self.events.push_robot = None
+        # self.events.push_robot = None
+        # remove heading command
+        # self.commands.base_velocity.ranges.lin_vel_x = (-0.6, 0.6)
+        # self.commands.base_velocity.ranges.lin_vel_y = (-0.6, 0.6)
+        # self.commands.base_velocity.ranges.ang_vel_z = (-0.0, 0.0)

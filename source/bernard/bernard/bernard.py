@@ -16,7 +16,7 @@ Reference: https://github.com/UMich-BipedLab/Cassie_Model/blob/master/urdf/cassi
 import os
 
 import isaaclab.sim as sim_utils
-from isaaclab.actuators import ActuatorNetLSTMCfg
+from isaaclab.actuators import ActuatorNetLSTMCfg, ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
@@ -24,8 +24,8 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 # Configuration
 ##
 
-BERNARD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "data", "bernard")
-BERNARD_MODEL_PATH = os.path.join(BERNARD_MODEL_DIR, "bernard.usd")
+BERNARD_MODEL_DIR = os.path.join(os.path.dirname(__file__), "data", "BERNARD")
+BERNARD_MODEL_PATH = os.path.join(BERNARD_MODEL_DIR, "BERNARD.usd")
 
 BERNARD_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
@@ -41,47 +41,47 @@ BERNARD_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=1
+            enabled_self_collisions=False, solver_position_iteration_count=8, solver_velocity_iteration_count=8
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.9),
+        pos=(0.0, 0.0, 0.4),
         joint_pos={
-            "r_hip_joint": 0.0,
-            "l_hip_joint": 0.0,
-            "r_arm_joint": 0.0,
-            "l_arm_joint": 0.0,
-            "r_knee_joint": 0.0,
-            "l_knee_joint": 0.0,
-            "r_foot_joint": 0.0,
-            "l_foot_joint": 0.0,
+            "r_hip_joint": 0.03,
+            "l_hip_joint": -0.03,
+            "r_arm_joint": -0.73,
+            "l_arm_joint": 0.73,
+            "r_knee_joint": -1.01,
+            "l_knee_joint": 1.01,
+            "r_foot_joint": -0.27,
+            "l_foot_joint": -0.27,
         },
         joint_vel={".*": 0.0},
     ),
-    soft_joint_pos_limit_factor=0.9,
+    soft_joint_pos_limit_factor=1.0,
     actuators={
-        # "ak60_6": ImplicitActuatorCfg(
-        #     joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
-        #     effort_limit_sim=9.0,
-        #     velocity_limit_sim=10.0,
-        #     stiffness={
-        #         ".*": 2.5,
-        #     },
-        #     damping={".*": 0.05},
-        # ),
-        "ak60_6": ActuatorNetLSTMCfg(
+        "ak60_6": ImplicitActuatorCfg(
             joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
-            network_file=f"{ISAACLAB_NUCLEUS_DIR}/ActuatorNets/ANYbotics/anydrive_3_lstm_jit.pt",
-            saturation_effort=10.0,
-            effort_limit=9.0,
-            velocity_limit=7.5,
-        )
+            effort_limit_sim=8.0,
+            velocity_limit_sim=15.0,
+            stiffness={
+                ".*_hip_.*|.*_arm_.*|.*_knee_.*": 80.0,
+            },
+            damping={".*": 0.5},
+        ),
+        # "ak60_6": ActuatorNetLSTMCfg(
+        #     joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
+        #     network_file=f"{ISAACLAB_NUCLEUS_DIR}/ActuatorNets/ANYbotics/anydrive_3_lstm_jit.pt",
+        #     saturation_effort=10.0,
+        #     effort_limit=8.0,
+        #     velocity_limit=15.0,
+        # ),
         # "passive": ImplicitActuatorCfg(
         #     joint_names_expr=[".*_foot_.*"],
-        #     effort_limit_sim=0.0,
-        #     velocity_limit_sim=0.0,
+        #     effort_limit_sim=0.5,
+        #     velocity_limit_sim=1.0,
         #     stiffness={
-        #         ".*": 0.0,
+        #         ".*": 1.0,
         #     },
         #     damping={".*": 0.05},
         # ),

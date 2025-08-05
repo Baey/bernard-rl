@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import isaaclab.utils.math as math_utils
 import torch
+import numpy as np
 from isaaclab.assets import Articulation, RigidObject
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers.manager_base import ManagerTermBase
@@ -26,3 +26,13 @@ def feet_contact_forces(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: Sc
     net_contact_forces = torch.norm(feet_contact_sensor.data.net_forces_w_history, dim=-1)
     # compute the violation
     return net_contact_forces[:, 0, sensor_cfg.body_ids]
+
+
+def gait_phase(env: ManagerBasedRLEnv, period: float) -> torch.Tensor:
+    """Compute the gait phase for the agent."""
+    global_phase = (env.episode_length_buf * env.step_dt) % period / period
+
+    phase = torch.zeros(env.num_envs, 2, device=env.device)
+    phase[:, 0] = torch.sin(global_phase * torch.pi * 2.0)
+    phase[:, 1] = torch.cos(global_phase * torch.pi * 2.0)
+    return phase
