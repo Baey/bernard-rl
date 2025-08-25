@@ -59,35 +59,32 @@ def terrain_levels_vel(
 def lin_vel_cmd_levels(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
-    limit_ranges: UniformVelocityCommandCfg.Ranges,
-    reward_term_name: str = "track_lin_vel_xy_exp",
-) -> torch.Tensor:
+    new_ranges: UniformVelocityCommandCfg.Ranges,
+    num_steps: int = 100_000
+):
     command_term = env.command_manager.get_term("base_velocity")
     ranges = command_term.cfg.ranges
 
-    reward_term = env.reward_manager.get_term_cfg(reward_term_name)
-    reward = torch.mean(env.reward_manager._episode_sums[reward_term_name][env_ids]) / env.max_episode_length_s
+    # if env.common_step_counter > num_steps:
+        # obtain the current command ranges
+    x_min, x_max = ranges.lin_vel_x
+    y_min, y_max = ranges.lin_vel_y
+    heading_min, heading_max = ranges.heading
+    # update the ranges
+    x_min = new_ranges.lin_vel_x[0]
+    x_max = new_ranges.lin_vel_x[1]
+    y_min = new_ranges.lin_vel_y[0]
+    y_max = new_ranges.lin_vel_y[1]
+    heading_min = new_ranges.heading[0]
+    heading_max = new_ranges.heading[1]
+    # set the new ranges
+    ranges.lin_vel_x = (x_min, x_max)
+    ranges.lin_vel_y = (y_min, y_max)
+    ranges.heading = (heading_min, heading_max)
+    # update the command term configuration
+    command_term.cfg.ranges = ranges
+    env.command_manager.set_term_cfg("base_velocity", command_term.cfg)
 
-    if env.common_step_counter % env.max_episode_length == 0:
-        if reward > reward_term.weight * 0.8:
-            delta_command = torch.tensor([-0.05, 0.05], device=env.device)
-            ranges.lin_vel_x = torch.clamp(
-                torch.tensor(ranges.lin_vel_x, device=env.device) + delta_command,
-                limit_ranges.lin_vel_x[0],
-                limit_ranges.lin_vel_x[1],
-            ).tolist()
-            ranges.lin_vel_y = torch.clamp(
-                torch.tensor(ranges.lin_vel_y, device=env.device) + delta_command,
-                limit_ranges.lin_vel_y[0],
-                limit_ranges.lin_vel_y[1],
-            ).tolist()
-            ranges.ang_vel_z = torch.clamp(
-                torch.tensor(ranges.ang_vel_z, device=env.device) + delta_command,
-                limit_ranges.ang_vel_z[0],
-                limit_ranges.ang_vel_z[1],
-            ).tolist()
-
-    return torch.tensor(ranges.lin_vel_x[1], device=env.device)
 
 def push_robot_levels(
     env: ManagerBasedRLEnv,
@@ -106,44 +103,39 @@ def push_robot_levels(
     Returns:
         The mean push level for the given environment ids.
     """
-    # if not hasattr(env, "push_robot_curriculum_cache") or env.push_robot_curriculum_cache is None:
-    #     # Cache joint positions for all pairs
-    #     env.push_robot_curriculum_cache = [
-    #         [asset.find_joints(joint_name) for joint_name in joint_pair] for joint_pair in mirror_joints
-    #     ]
     # extract the used quantities (to enable type-hinting)
     push_event = env.event_manager.get_term_cfg("push_robot")
     reward_term = env.reward_manager.get_term_cfg("alive")
     avg_alive_s = torch.mean(env.reward_manager._episode_sums["alive"][env_ids]) / reward_term.weight
 
-    if avg_alive_s > alive_s_threshold:
-        x_min = push_event.params['velocity_range']['x'][0]
-        x_max = push_event.params['velocity_range']['x'][1]
-        y_min = push_event.params['velocity_range']['y'][0]
-        y_max = push_event.params['velocity_range']['y'][1]
-        interval_lower = push_event.interval_range_s[0]
-        interval_upper = push_event.interval_range_s[1]
-        
-        if x_min - velocity_step_size > velocity_range['x'][0]:
-            x_min = max(x_min - velocity_step_size, velocity_range['x'][0])
-        if x_max + velocity_step_size < velocity_range['x'][1]:
-            x_max = min(x_max + velocity_step_size, velocity_range['x'][1])
-        if y_min - velocity_step_size > velocity_range['y'][0]:
-            y_min = max(y_min - velocity_step_size, velocity_range['y'][0])
-        if y_max + velocity_step_size < velocity_range['y'][1]:
-            y_max = min(y_max + velocity_step_size, velocity_range['y'][1])
-        if interval_lower - interval_step_size > interval_min:
-            interval_lower = max(interval_lower - interval_step_size, interval_min)
-            interval_upper = interval_upper - interval_step_size
+    if env.common_step_counter % env.max_episode_length == 0:
+        if avg_alive_s > alive_s_threshold:
+            x_min = push_event.params['velocity_range']['x'][0]
+            x_max = push_event.params['velocity_range']['x'][1]
+            y_min = push_event.params['velocity_range']['y'][0]
+            y_max = push_event.params['velocity_range']['y'][1]
+            interval_lower = push_event.interval_range_s[0]
+            interval_upper = push_event.interval_range_s[1]
+            
+            if x_min - velocity_step_size > velocity_range['x'][0]:
+                x_min = max(x_min - velocity_step_size, velocity_range['x'][0])
+            if x_max + velocity_step_size < velocity_range['x'][1]:
+                x_max = min(x_max + velocity_step_size, velocity_range['x'][1])
+            if y_min - velocity_step_size > velocity_range['y'][0]:
+                y_min = max(y_min - velocity_step_size, velocity_range['y'][0])
+            if y_max + velocity_step_size < velocity_range['y'][1]:
+                y_max = min(y_max + velocity_step_size, velocity_range['y'][1])
+            if interval_lower - interval_step_size > interval_min:
+                interval_lower = max(interval_lower - interval_step_size, interval_min)
+                interval_upper = interval_upper - interval_step_size
 
-        push_event.params['velocity_range'] = {
-            'x': (x_min, x_max),
-            'y': (y_min, y_max)
-        }
-        push_event.interval_range_s = (interval_lower, interval_upper)
-        env.event_manager.set_term_cfg("push_robot", push_event)
-        # print(f"Mean alive_s: {avg_alive_s}, updated push velocity range: {push_event.params['velocity_range']}, "
-        #       f"interval range: {push_event.interval_range_s}")
+            push_event.params['velocity_range'] = {
+                'x': (x_min, x_max),
+                'y': (y_min, y_max)
+            }
+            push_event.interval_range_s = (interval_lower, interval_upper)
+            env.event_manager.set_term_cfg("push_robot", push_event)
+
 
 def reset_base_levels(
     env: ManagerBasedRLEnv,
@@ -165,32 +157,33 @@ def reset_base_levels(
     reward_term = env.reward_manager.get_term_cfg("alive")
     avg_alive_s = torch.mean(env.reward_manager._episode_sums["alive"][env_ids]) / reward_term.weight
 
-    if avg_alive_s > alive_s_threshold:
-        x_min = reset_event.params['velocity_range']['x'][0]
-        x_max = reset_event.params['velocity_range']['x'][1]
-        y_min = reset_event.params['velocity_range']['y'][0]
-        y_max = reset_event.params['velocity_range']['y'][1]
-        z_min = reset_event.params['velocity_range']['z'][0]
-        z_max = reset_event.params['velocity_range']['z'][1]
+    if env.common_step_counter % env.max_episode_length == 0:
+        if avg_alive_s > alive_s_threshold:
+            x_min = reset_event.params['velocity_range']['x'][0]
+            x_max = reset_event.params['velocity_range']['x'][1]
+            y_min = reset_event.params['velocity_range']['y'][0]
+            y_max = reset_event.params['velocity_range']['y'][1]
+            z_min = reset_event.params['velocity_range']['z'][0]
+            z_max = reset_event.params['velocity_range']['z'][1]
 
-        if x_min - step_size > velocity_range['x'][0]:
-            x_min = max(x_min - step_size, velocity_range['x'][0])
-        if x_max + step_size < velocity_range['x'][1]:
-            x_max = min(x_max + step_size, velocity_range['x'][1])
-        if y_min - step_size > velocity_range['y'][0]:
-            y_min = max(y_min - step_size, velocity_range['y'][0])
-        if y_max + step_size < velocity_range['y'][1]:
-            y_max = min(y_max + step_size, velocity_range['y'][1])
-        if z_min - step_size > velocity_range['z'][0]:
-            z_min = max(z_min - step_size, velocity_range['z'][0])
-        if z_max + step_size < velocity_range['z'][1]:
-            z_max = min(z_max + step_size, velocity_range['z'][1])
-        reset_event.params['velocity_range'] = {
-            'x': (x_min, x_max),
-            'y': (y_min, y_max),
-            'z': (z_min, z_max)
-        }
-        env.event_manager.set_term_cfg("reset_base", reset_event)
+            if x_min - step_size > velocity_range['x'][0]:
+                x_min = max(x_min - step_size, velocity_range['x'][0])
+            if x_max + step_size < velocity_range['x'][1]:
+                x_max = min(x_max + step_size, velocity_range['x'][1])
+            if y_min - step_size > velocity_range['y'][0]:
+                y_min = max(y_min - step_size, velocity_range['y'][0])
+            if y_max + step_size < velocity_range['y'][1]:
+                y_max = min(y_max + step_size, velocity_range['y'][1])
+            if z_min - step_size > velocity_range['z'][0]:
+                z_min = max(z_min - step_size, velocity_range['z'][0])
+            if z_max + step_size < velocity_range['z'][1]:
+                z_max = min(z_max + step_size, velocity_range['z'][1])
+            reset_event.params['velocity_range'] = {
+                'x': (x_min, x_max),
+                'y': (y_min, y_max),
+                'z': (z_min, z_max)
+            }
+            env.event_manager.set_term_cfg("reset_base", reset_event)
 
 
 def modify_reward_weight(env: ManagerBasedRLEnv, env_ids: Sequence[int], term_name: str, weight: float, num_steps: int):

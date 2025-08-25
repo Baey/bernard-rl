@@ -28,11 +28,15 @@ def feet_contact_forces(env: ManagerBasedRLEnv, threshold: float, sensor_cfg: Sc
     return net_contact_forces[:, 0, sensor_cfg.body_ids]
 
 
-def gait_phase(env: ManagerBasedRLEnv, period: float) -> torch.Tensor:
+def gait_phase(env: ManagerBasedRLEnv, period: float, command_name: str | None=None) -> torch.Tensor:
     """Compute the gait phase for the agent."""
     global_phase = (env.episode_length_buf * env.step_dt) % period / period
 
     phase = torch.zeros(env.num_envs, 2, device=env.device)
     phase[:, 0] = torch.sin(global_phase * torch.pi * 2.0)
     phase[:, 1] = torch.cos(global_phase * torch.pi * 2.0)
+
+    if command_name is not None:
+        scale = torch.clip(torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1)/0.6, max=1.0, min=0.5)
+        phase *= scale[:, None]
     return phase

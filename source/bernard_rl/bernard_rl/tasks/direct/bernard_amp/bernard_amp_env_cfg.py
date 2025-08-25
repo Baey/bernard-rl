@@ -28,11 +28,11 @@ class BernardAmpEnvCfg(DirectRLEnvCfg):
     decimation = 2
 
     # spaces
-    observation_space = 37
+    observation_space = 31
     action_space = 6
     state_space = 0
     num_amp_observations = 2
-    amp_observation_space = 37
+    amp_observation_space = 31
 
     early_termination = True
     termination_height = 0.15

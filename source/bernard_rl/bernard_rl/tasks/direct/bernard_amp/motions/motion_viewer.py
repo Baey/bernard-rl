@@ -45,12 +45,12 @@ class MotionViewer:
             "r_foot": [],
             "body": [],
         }
-        # self.l_foot_index = self._motion_loader.get_body_index(["l_foot"])[0]
-        # self.r_foot_index = self._motion_loader.get_body_index(["r_foot"])[0]
-        # self.body_index = self._motion_loader.get_body_index(["body"])[0]
-        # print(
-        #     f"Left foot index: {self.l_foot_index}, Right foot index: {self.r_foot_index}, Body index: {self.body_index}"
-        # )
+        self.l_foot_index = self._motion_loader.get_body_index(["l_foot"])[0]
+        self.r_foot_index = self._motion_loader.get_body_index(["r_foot"])[0]
+        self.body_index = self._motion_loader.get_body_index(["body"])[0]
+        print(
+            f"Left foot index: {self.l_foot_index}, Right foot index: {self.r_foot_index}, Body index: {self.body_index}"
+        )
 
         print("\nBody")
         for i, name in enumerate(self._motion_loader.body_names):
@@ -67,8 +67,9 @@ class MotionViewer:
         self._figure_axes.scatter(*vertices.T, color=self._colors, depthshade=False)
 
         for i, name in enumerate(self._motion_loader.body_names):
-            x, y, z = vertices[i]
-            self._figure_axes.text(x, y, z, name, fontsize=8)
+            if name in ["l_foot", "r_foot", "body"]:
+                x, y, z = vertices[i]
+                self._figure_axes.text(x, y, z, name, fontsize=16)
 
         if self._render_scene:
             minimum = np.min(self._body_positions.reshape(-1, 3), axis=0)
@@ -92,24 +93,29 @@ class MotionViewer:
         )
         self._figure_axes.plot_surface(x, y, np.zeros_like(x), color="green", alpha=0.2)
 
-        self._figure_axes.set_xlabel("X")
-        self._figure_axes.set_ylabel("Y")
-        self._figure_axes.set_zlabel("Z")
-        self._figure_axes.set_title(f"frame: {self._current_frame}/{self._num_frames}")
+        label_fontsize = 18
+        title_fontsize = 22
+        tick_fontsize = 16
+        self._figure_axes.set_xlabel("X", fontsize=label_fontsize, labelpad=30)
+        self._figure_axes.set_ylabel("Y", fontsize=label_fontsize, labelpad=30)
+        self._figure_axes.set_zlabel("Z", fontsize=label_fontsize, labelpad=30)
+        self._figure_axes.set_title(f"frame: {self._current_frame}/{self._num_frames}", fontsize=title_fontsize)
+        self._figure_axes.tick_params(axis='both', which='major', labelsize=tick_fontsize)
+        self._figure_axes.tick_params(axis='both', which='minor', labelsize=tick_fontsize)
 
         # Trajectories
-        # self._trajectories["l_foot"].append(np.asarray(vertices[self.l_foot_index]))
-        # self._trajectories["r_foot"].append(np.asarray(vertices[self.r_foot_index]))
-        # self._trajectories["body"].append(np.asarray(vertices[self.body_index]))
+        self._trajectories["l_foot"].append(np.asarray(vertices[self.l_foot_index]))
+        self._trajectories["r_foot"].append(np.asarray(vertices[self.r_foot_index]))
+        self._trajectories["body"].append(np.asarray(vertices[self.body_index]))
 
-        # for name, traj in self._trajectories.items():
-        #     traj_np = np.array(traj)
-        #     color = (
-        #         "red" if name == "l_foot" else "blue" if name == "r_foot" else "green"
-        #     )
-        #     self._figure_axes.plot(
-        #         traj_np[:, 0], traj_np[:, 1], traj_np[:, 2], color=color, alpha=0.6
-        #     )
+        for name, traj in self._trajectories.items():
+            traj_np = np.array(traj)
+            color = (
+                "red" if name == "l_foot" else "blue" if name == "r_foot" else "green"
+            )
+            self._figure_axes.plot(
+                traj_np[:, 0], traj_np[:, 1], traj_np[:, 2], color=color, alpha=0.6
+            )
 
         # Velocities
         positions = self._body_positions[self._current_frame]
@@ -137,7 +143,7 @@ class MotionViewer:
 
         axis_length = 0.1
 
-        for pos, quat in zip(positions, orientations):
+        for pos, quat in zip([positions[0], positions[8], positions[7]], [orientations[0], orientations[8], orientations[7]]):
             rot = R.from_quat(quat, scalar_first=True)
             axes = rot.apply(np.eye(3) * axis_length)
 
@@ -164,8 +170,8 @@ class MotionViewer:
 
         self._current_frame += 1
         if self._current_frame >= self._num_frames:
-            self._current_frame = 0
-            self._trajectories = {"l_foot": [], "r_foot": [], "body": []}
+            self._current_frame = self._num_frames - 1
+            # self._trajectories = {"l_foot": [], "r_foot": [], "body": []}
 
     def show(self) -> None:
         self._figure = plt.figure()

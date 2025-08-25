@@ -110,9 +110,9 @@ def joint_deviation_l1_no_cmd(env: ManagerBasedRLEnv, command_name: str | None=N
     angle = asset.data.joint_pos[:, asset_cfg.joint_ids] - asset.data.default_joint_pos[:, asset_cfg.joint_ids]
     reward = torch.sum(torch.abs(angle), dim=1)
     # compute command and base velocity norms
-    if command_name is not None:
-        cmd_norm = torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1)
-        reward *= torch.clamp(torch.tanh(-2.0 * cmd_norm) + 1, min=0.2, max=1)
+    # if command_name is not None:
+    #     cmd_norm = torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1)
+    #     reward *= torch.clamp(torch.tanh(-2.0 * cmd_norm) + 1, min=0.2, max=1)
     return reward
 
 
@@ -185,7 +185,11 @@ def feet_on_ground_zero_cmd(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, 
     reward = torch.sum(is_contact, dim=1).float()
     # reward for zero command
     if command_name is not None:
-        reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) < 0.1
+        reward = torch.where(
+            torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) > 0.1,
+            torch.clip(reward, max=1.0, min=0.0),
+            reward
+        )
     return reward
 
 
@@ -211,10 +215,6 @@ def feet_gait(
     for i in range(len(sensor_cfg.body_ids)):
         is_stance = leg_phase[:, i] < threshold
         reward += ~(is_stance ^ is_contact[:, i])
-
-    if command_name is not None:
-        cmd_norm = torch.norm(env.command_manager.get_command(command_name), dim=1)
-        reward *= cmd_norm > 0.1
     return reward
 
 

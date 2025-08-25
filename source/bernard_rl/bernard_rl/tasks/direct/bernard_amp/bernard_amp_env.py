@@ -29,7 +29,7 @@ class BernardAmpEnv(DirectRLEnv):
         self._motion_loader = MotionLoader(motion_file=self.cfg.motion_file, device=self.device)
 
         # DOF and key body indexes
-        key_body_names = ["l_hip", "r_hip", "l_foot", "r_foot"]
+        key_body_names = ["l_foot", "r_foot"]
         active_dof_names = ["l_hip_joint", "r_hip_joint", "l_arm_joint", "r_arm_joint", "l_knee_joint", "r_knee_joint"]
         self.ref_body_index = self.robot.data.body_names.index(self.cfg.reference_body)
         self.key_body_indexes = [self.robot.data.body_names.index(name) for name in key_body_names]
@@ -50,7 +50,7 @@ class BernardAmpEnv(DirectRLEnv):
 
         # previous step buffers
         self.prev_actions = torch.zeros_like(self.actions, dtype=torch.float32, device=self.device)
-        self.prev_ref_body_pos = torch.zeros((self.num_envs, 3), dtype=torch.float32, device=self.device)
+        self.prev_root_pos_x = torch.zeros((self.num_envs, 1), dtype=torch.float32, device=self.device)
 
         # reconfigure AMP observation space according to the number of observations and create the buffer
         self.amp_observation_size = self.cfg.num_amp_observations * self.cfg.amp_observation_space
@@ -89,7 +89,7 @@ class BernardAmpEnv(DirectRLEnv):
         # target = self.actions * self.action_scale
         # self.robot.set_joint_effort_target(target, self.active_dof_indexes)
         self.prev_actions = self.actions.clone()
-        self.prev_ref_body_pos = self.robot.data.body_pos_w[:, self.ref_body_index].clone()
+        self.prev_root_pos_x = self.robot.data.root_pos_w[:, 0].clone()
 
     def _get_observations(self) -> dict:
         # build task observation
@@ -113,16 +113,15 @@ class BernardAmpEnv(DirectRLEnv):
 
     def _get_rewards(self) -> torch.Tensor:
         alive = torch.ones((self.num_envs,), dtype=torch.float32, device=self.sim.device) * 0.2
-        action_rate_penalty = torch.sum((self.actions - self.prev_actions) ** 2, dim=-1) * 0.03
+        action_rate_penalty = torch.sum((self.actions - self.prev_actions) ** 2, dim=-1) * 0.001
+        qvel = self.robot.data.joint_vel[:, self.active_dof_indexes]
+        qfrc = self.robot.data.applied_torque[:, self.active_dof_indexes]
+        energy = torch.sum(torch.abs(qvel) * torch.abs(qfrc), dim=-1) * 0.0009
         delta_distance = (
-            self.robot.data.body_pos_w[:, self.ref_body_index]
-            - self.prev_ref_body_pos
+            self.robot.data.root_pos_w[:, 0] - self.prev_root_pos_x
         )
-        dist_norm = delta_distance.norm(dim=-1).view(-1, 1)
-        move_vector_normalized = delta_distance / (dist_norm + 1e-6)
-        direction_rew = torch.sum(move_vector_normalized * self.robot.data.FORWARD_VEC_B, dim=1)
-        move_reward = torch.clamp(dist_norm.squeeze(), min=0.0, max=1.0) * direction_rew * 3
-        return move_reward + alive - action_rate_penalty
+        move_reward = torch.clip(delta_distance.squeeze(), min=0.0, max=0.1) * 3
+        return move_reward + alive - energy - action_rate_penalty
         # return torch.ones((self.num_envs,), dtype=torch.float32, device=self.sim.device)
 
     def _get_dones(self) -> tuple[torch.Tensor, torch.Tensor]:
