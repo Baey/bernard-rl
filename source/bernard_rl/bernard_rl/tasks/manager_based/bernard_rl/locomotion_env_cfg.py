@@ -141,7 +141,7 @@ class CommandsCfg:
         rel_standing_envs=0.1,
         rel_heading_envs=1.0,
         heading_command=True,
-        heading_control_stiffness=1.0,
+        heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
             lin_vel_x=(-0.0, 0.0),
@@ -162,17 +162,17 @@ class ObservationsCfg:
 
         # observation terms (order preserved)
         base_lin_acc = ObsTerm(
-            func=mdp.imu_lin_acc, noise=Unoise(n_min=-0.01, n_max=0.01), scale=0.01
+            func=mdp.imu_lin_acc, noise=Unoise(n_min=-0.01, n_max=0.01), scale=0.1, clip=(-30.0, 30.0)
         )
         base_ang_vel = ObsTerm(
-            func=mdp.imu_ang_vel, noise=Unoise(n_min=-0.02, n_max=0.02), scale=0.1
+            func=mdp.imu_ang_vel, noise=Unoise(n_min=-0.15, n_max=0.15), scale=0.1
         )
         base_orientation = ObsTerm(
-            func=mdp.imu_orientation, noise=Unoise(n_min=-0.01, n_max=0.01)
+            func=mdp.imu_orientation
         )
         joint_pos = ObsTerm(
             func=mdp.joint_pos_limit_normalized,
-            noise=Unoise(n_min=-0.01, n_max=0.01),
+            noise=Unoise(n_min=-0.08, n_max=0.08),
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot",
@@ -182,14 +182,14 @@ class ObservationsCfg:
         )
         joint_vel = ObsTerm(
             func=mdp.joint_vel_rel,
-            noise=Unoise(n_min=-0.01, n_max=0.01),
+            noise=Unoise(n_min=-0.1, n_max=0.1),
             params={
                 "asset_cfg": SceneEntityCfg(
                     "robot",
                     joint_names=".*_hip_.*|.*_arm_.*|.*_knee_.*"
                 ),
             },
-            scale=0.05
+            scale=0.1
         )
         contact_forces = ObsTerm(
             func=mdp.feet_contact_forces,
@@ -212,7 +212,7 @@ class ObservationsCfg:
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, params={"command_name": "base_velocity"}
         )
-        # actions = ObsTerm(func=mdp.last_action)
+        actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -227,7 +227,7 @@ class ObservationsCfg:
 
         # observation terms (order preserved)
         base_lin_acc = ObsTerm(
-            func=mdp.imu_lin_acc, scale=0.01
+            func=mdp.imu_lin_acc, scale=0.1, clip=(-30.0, 30.0)
         )
         base_ang_vel = ObsTerm(
             func=mdp.imu_ang_vel, scale=0.1
@@ -258,7 +258,7 @@ class ObservationsCfg:
                     joint_names=".*_hip_.*|.*_arm_.*|.*_knee_.*|.*_foot_.*"
                 )
             },
-            scale=0.05
+            scale=0.1
         )
         joint_effort = ObsTerm(
             func=mdp.joint_effort,
@@ -287,7 +287,7 @@ class ObservationsCfg:
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, params={"command_name": "base_velocity"}
         )
-        # actions = ObsTerm(func=mdp.last_action)
+        actions = ObsTerm(func=mdp.last_action)
 
     # observation groups
     critic: CriticCfg = CriticCfg()
@@ -452,7 +452,7 @@ class RewardsCfg:
     )
 
     # -- penalties
-    energy = RewTerm(func=mdp.energy, weight=-0.0009)
+    energy = RewTerm(func=mdp.energy, weight=-0.001)
     base_lin_vel_no_cmd = RewTerm(
         func=mdp.base_lin_vel_xy,
         params={"command_name": "base_velocity"},
@@ -465,7 +465,7 @@ class RewardsCfg:
         weight=-5e-3
     )
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.01)
-    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-1.5e-3)
+    action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-4.5e-3)
     action_l2 = RewTerm(func=mdp.action_l2, weight=-1.2e-3)
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
@@ -473,7 +473,7 @@ class RewardsCfg:
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*forearm.*|.*arm.*"), "threshold": 1.0},
     )
     flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-0.91)
-    dof_torque_limits = RewTerm(func=mdp.applied_torque_limits, weight=-1.0e-3)
+    dof_torque_limits = RewTerm(func=mdp.applied_torque_limits, weight=-3.0e-3)
     feet_slide = RewTerm(
         func=mdp.feet_slide,
         weight=-0.95,
@@ -636,7 +636,7 @@ class CurriculumCfg:
             "address": "commands.base_velocity.ranges.ang_vel_z",
             "modify_fn": override_velocity_command_range,
             "modify_params": {
-                "value": (-0.3, 0.3),
+                "value": (-0.35, 0.35),
                 "num_steps": CURRICULUM_STAGE_2_STEPS,
             }
         }
@@ -696,7 +696,7 @@ class CurriculumCfg:
         func=mdp.modify_reward_weight,
         params={
             "term_name": "joint_deviation_arms",
-            "weight": -1.1,
+            "weight": -0.8,
             "num_steps": CURRICULUM_STAGE_1_STEPS,
         }
     )
@@ -704,7 +704,7 @@ class CurriculumCfg:
         func=mdp.modify_reward_weight,
         params={
             "term_name": "joint_deviation_knees",
-            "weight": -0.7,
+            "weight": -0.4,
             "num_steps": CURRICULUM_STAGE_1_STEPS,
         }
     )
@@ -739,7 +739,7 @@ class BernardLocomotionEnvCfg(ManagerBasedRLEnvCfg):
     def __post_init__(self):
         """Post initialization."""
         # general settings
-        self.decimation = 4
+        self.decimation = 2
         self.episode_length_s = 15.0
         # simulation settings
         self.sim.dt = 0.005
@@ -752,56 +752,18 @@ class BernardLocomotionEnvCfg(ManagerBasedRLEnvCfg):
 
 
 @configclass
-class BernardLocomotionEnvCfg_PLAY(ManagerBasedRLEnvCfg):
-    # Scene settings
-    scene: BernardSceneCfg = BernardSceneCfg(num_envs=32, env_spacing=2.5)
-    # Basic settings
-    commands: CommandsCfg = CommandsCfg()
-    commands.base_velocity.ranges.lin_vel_x = (-0.0, 0.0)
-    commands.base_velocity.ranges.lin_vel_y = (0.3, 0.3)
-    commands.base_velocity.ranges.ang_vel_z = (-0.3, 0.3)
-    # commands.base_velocity.ranges.heading = (-math.pi, math.pi)
-    commands.base_velocity.ranges.heading = (0.0, 0.0)
-    commands.base_velocity.resampling_time_range = (15.0, 15.0)
-    observations: ObservationsCfg = ObservationsCfg()
-    actions: ActionsCfg = ActionsCfg()
-    # MDP settings
-    rewards: RewardsCfg = RewardsCfg()
-    terminations: TerminationsCfg = TerminationsCfg()
-    events: EventCfg = EventCfg()
-    events.reset_base.params["pose_range"] = {
-        "x": (-0.0, 0.0),
-        "y": (-0.0, 0.0),
-        "z": (0.0, 0.0),
-        "yaw": (-0.0, 0.0)
-    }
-    # events.reset_base.params["velocity_range"] = {
-    #     "x": (0.33, 0.35),
-    #     "y": (0.33, 0.35),
-    #     "z": (0.2, 0.2),
-    #     "yaw": (-0.0, 0.0)
-    # }
-    events.reset_base.params["velocity_range"] = {
-        "x": (0.0, 0.0),
-        "y": (0.0, 0.0),
-        "z": (0.0, 0.0),
-        "yaw": (-0.0, 0.0)
-    }
-    events.push_robot.params["velocity_range"] = {
-        "x": (0.0, 0.0),
-        "y": (0.0, 0.0)
-    }
-
+class BernardLocomotionEnvCfg_PLAY(BernardLocomotionEnvCfg):
     def __post_init__(self):
         """Post initialization."""
-        # general settings
-        self.decimation = 4
-        self.episode_length_s = 15.0
-        # simulation settings
-        self.sim.dt = 0.005
-        self.sim.render_interval = self.decimation
-        self.sim.physics_material = self.scene.terrain.physics_material
-        self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**15
-        # update sensor update periods
-        if self.scene.contact_forces is not None:
-            self.scene.contact_forces.update_period = self.sim.dt
+        super().__post_init__()
+        self.commands.base_velocity.ranges.lin_vel_x = (-0.4, 0.4)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.4, 0.4)
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.3, 0.3)
+        self.commands.base_velocity.ranges.heading = (0, 0)
+        self.events.reset_base.params["velocity_range"] = {
+            "x": (-0.2, 0.2),
+            "y": (-0.2, 0.2),
+            "z": (-0.2, 0.2),
+            "yaw": (-0.0, 0.0)
+        }
+        # self.events.push_robot = None

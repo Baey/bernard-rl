@@ -47,7 +47,15 @@ parser.add_argument(
     help="The RL algorithm used for training the skrl agent.",
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
-
+parser.add_argument(
+    "--save_observations", action="store_true", default=False, help="Save observations during training."
+)
+parser.add_argument(
+    "--save_trajectory", action="store_true", default=False, help="Save the trajectory during training."
+)
+parser.add_argument(
+    "--num_steps", type=int, default=None, help="Number of steps to save."
+)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
@@ -64,6 +72,7 @@ simulation_app = app_launcher.app
 import os
 import time
 
+import numpy as np
 import gymnasium as gym
 import skrl
 import torch
@@ -175,6 +184,17 @@ def main():
     # reset environment
     obs, _ = env.reset()
     timestep = 0
+    observations = []
+    robot = env.unwrapped.scene["robot"]
+    body_names = ['body', 'l_foot', 'r_foot', 'l_arm', 'r_arm', 'l_forearm', 'r_forearm', 'l_hip', 'r_hip']
+    body_idx = [robot.data.body_names.index(name) for name in body_names]
+
+    trajectory = {
+        'body_names': body_names,
+        'pos': [],
+        'quat': [],
+        'actions': []
+    }
     # simulate environment
     while simulation_app.is_running():
         start_time = time.time()
@@ -196,6 +216,19 @@ def main():
             # exit the play loop after recording one video
             if timestep == args_cli.video_length:
                 break
+        if args_cli.save_observations:
+            # save observations
+            observations.append(obs.cpu().numpy())
+            if args_cli.num_steps is not None and len(observations) >= args_cli.num_steps:
+                break
+        if args_cli.save_trajectory:
+            pos = robot.data.body_pos_w[:, body_idx].detach().cpu().numpy()
+            quat = robot.data.body_quat_w[:, body_idx].detach().cpu().numpy()
+            trajectory['pos'].append(pos)
+            trajectory['quat'].append(quat)
+            trajectory['actions'].append(actions.detach().cpu().numpy())
+            if args_cli.num_steps is not None and len(trajectory['pos']) >= args_cli.num_steps:
+                break
 
         # time delay for real-time evaluation
         sleep_time = dt - (time.time() - start_time)
@@ -204,6 +237,17 @@ def main():
 
     # close the simulator
     env.close()
+    if args_cli.save_observations:
+        observations = np.array(observations)
+        np.save("calibration_obs.npy", observations)
+        print(f"[INFO] Saved observations to 'calibration_obs.npy' with shape {observations.shape}.")
+    if args_cli.save_trajectory:
+        trajectory['pos'] = np.array(trajectory['pos'])
+        trajectory['quat'] = np.array(trajectory['quat'])
+        trajectory['actions'] = np.array(trajectory['actions'])
+        np.savez("trajectory.npz", **trajectory)
+        print(f"[INFO] Saved trajectory to 'calibration_trajectory.npz' with shapes {trajectory['pos'].shape}, {trajectory['quat'].shape}, {trajectory['actions'].shape}.")
+
 
 
 if __name__ == "__main__":

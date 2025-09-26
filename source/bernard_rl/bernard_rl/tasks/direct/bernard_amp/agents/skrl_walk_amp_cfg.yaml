@@ -86,8 +86,8 @@ agent:
   value_loss_scale: 2.5
   discriminator_loss_scale: 5.0
   amp_batch_size: 512
-  task_reward_weight: 0.8
-  style_reward_weight: 0.2
+  task_reward_weight: 0.5
+  style_reward_weight: 0.5
   discriminator_batch_size: 4096
   discriminator_reward_scale: 2.0
   discriminator_logit_regularization_scale: 0.05
@@ -107,5 +107,5 @@ agent:
 # https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
 trainer:
   class: SequentialTrainer
-  timesteps: 60000
+  timesteps: 45000
   environment_info: log

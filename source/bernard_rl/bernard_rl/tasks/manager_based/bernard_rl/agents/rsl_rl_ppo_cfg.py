@@ -11,31 +11,31 @@ from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, R
 @configclass
 class BernardLocomotionPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     num_steps_per_env = 128
-    max_iterations = 10000
+    max_iterations = 9000
     save_interval = 100
     experiment_name = "bernard_locomotion"
-    empirical_normalization = True
-    # policy = RslRlPpoActorCriticCfg(
-    #     init_noise_std=1.0,
-    #     actor_hidden_dims=[256, 128],
-    #     critic_hidden_dims=[256, 128],
-    #     activation="relu",
-    # )
+    empirical_normalization = False
+    policy = RslRlPpoActorCriticCfg(
+        init_noise_std=0.9,
+        actor_hidden_dims=[256, 128],
+        critic_hidden_dims=[256, 128],
+        activation="relu",
+    )
     # policy = RslRlPpoActorCriticQuantCfg(
     #     init_noise_std=1.0,
     #     actor_hidden_dims=[256, 128],
     #     critic_hidden_dims=[256, 128],
     #     activation="qrelu",
     # )
-    policy = RslRlPpoActorCriticRecurrentCfg(
-        init_noise_std=0.8,
-        actor_hidden_dims=[128],
-        critic_hidden_dims=[128],
-        rnn_type="lstm",
-        rnn_hidden_dim=256,
-        rnn_num_layers=1,
-        activation="tanh",
-    )
+    # policy = RslRlPpoActorCriticRecurrentCfg(
+    #     init_noise_std=0.8,
+    #     actor_hidden_dims=[128],
+    #     critic_hidden_dims=[128],
+    #     rnn_type="lstm",
+    #     rnn_hidden_dim=256,
+    #     rnn_num_layers=1,
+    #     activation="tanh",
+    # )
 
     algorithm = RslRlPpoAlgorithmCfg(
         value_loss_coef=1.0,

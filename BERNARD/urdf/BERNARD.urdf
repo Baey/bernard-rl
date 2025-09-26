@@ -1,5 +1,5 @@
 <robot name="BERNARD" version="1.0">
-  <joint name="l_hip_joint" type="revolute">
+  <joint name="l_hip1_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-0.52360" upper="0.52360" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="0.04683 0.04994 -0.02923"/>
@@ -7,19 +7,19 @@
     <child link="l_hip"/>
     <axis xyz="1.00000 0.00000 0.00000"/>
   </joint>
-  <joint name="l_arm_joint" type="revolute">
+  <joint name="l_hip2_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-0.87266" upper="1.57080" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="-0.04685 0.05205 -0.00010"/>
     <parent link="l_hip"/>
-    <child link="l_arm"/>
+    <child link="l_thigh"/>
     <axis xyz="0.00000 1.00000 0.00000"/>
   </joint>
   <joint name="l_knee_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-1.74533" upper="1.74533" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="0.01548 -0.00042 -0.11919"/>
-    <parent link="l_arm"/>
+    <parent link="l_thigh"/>
     <child link="l_forearm"/>
     <axis xyz="0.00000 -1.00000 0.00000"/>
   </joint>
@@ -31,7 +31,7 @@
     <child link="l_foot"/>
     <axis xyz="0.00000 -1.00000 0.00000"/>
   </joint>
-  <joint name="r_hip_joint" type="revolute">
+  <joint name="r_hip1_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-0.52360" upper="0.52360" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="0.04683 -0.04994 -0.02923"/>
@@ -39,19 +39,19 @@
     <child link="r_hip"/>
     <axis xyz="1.00000 0.00000 0.00000"/>
   </joint>
-  <joint name="r_arm_joint" type="revolute">
+  <joint name="r_hip2_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-1.57080" upper="0.87266" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="-0.04685 -0.05206 -0.00010"/>
     <parent link="r_hip"/>
-    <child link="r_arm"/>
+    <child link="r_thigh"/>
     <axis xyz="0.00000 -1.00000 0.00000"/>
   </joint>
   <joint name="r_knee_joint" type="revolute">
     <dynamics damping="0.01000"/>
     <limit lower="-1.74533" upper="1.74533" effort="9.00000" velocity="9.00000"/>
     <origin rpy="0.00000 0.00000 0.00000" xyz="0.01548 0.00042 -0.11919"/>
-    <parent link="r_arm"/>
+    <parent link="r_thigh"/>
     <child link="r_forearm"/>
     <axis xyz="0.00000 1.00000 0.00000"/>
   </joint>
@@ -100,7 +100,7 @@
       </geometry>
     </visual>
   </link>
-  <link name="l_arm">
+  <link name="l_thigh">
     <collision name="L_Arm_collision">
       <origin rpy="0.00000 0.00000 0.00000" xyz="0.00538 0.01969 -0.05894"/>
       <geometry>
@@ -174,7 +174,7 @@
       </geometry>
     </visual>
   </link>
-  <link name="r_arm">
+  <link name="r_thigh">
     <collision name="R_Arm_collision">
       <origin rpy="0.00000 0.00000 0.00000" xyz="0.00538 -0.01969 -0.05893"/>
       <geometry>

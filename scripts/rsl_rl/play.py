@@ -175,6 +175,9 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     robot = env.unwrapped.scene["robot"]
     body_names = ['body', 'l_foot', 'r_foot', 'l_arm', 'r_arm', 'l_forearm', 'r_forearm', 'l_hip', 'r_hip']
     body_idx = [robot.data.body_names.index(name) for name in body_names]
+    # print("Joint limits:")
+    # for name, lim in zip(robot.data.joint_names, robot.data.joint_limits):
+    #     print(f"  {name}: {lim}")
 
     trajectory = {
         'body_names': body_names,
