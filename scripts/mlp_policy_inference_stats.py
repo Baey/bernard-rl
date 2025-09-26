@@ -33,9 +33,8 @@ def load_fp32_model(weights_path='policy.pt', device='cpu'):
 
 
 if __name__ == "__main__":
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = "cuda"
-    model = load_fp32_model(weights_path='/home/blaszar/bernard_rl/scripts/rsl_rl/logs/rsl_rl/bernard_locomotion/2025-09-10_11-25-57/model_6100.pt', device=device)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = load_fp32_model(weights_path='rsl_rl/logs/rsl_rl/bernard_locomotion/2025-09-10_11-25-57/model_6100.pt', device=device)
     model.eval()
 
     n_iter = 1000
