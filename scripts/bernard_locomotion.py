@@ -31,6 +31,12 @@ from isaaclab.app import AppLauncher
 parser = argparse.ArgumentParser(
     description="Interactive demo with the Bernard robot."
 )
+parser.add_argument(
+    "--hil", action="store_true", help="Enable hardware-in-the-loop mode with ROS2."
+)
+parser.add_argument(
+    "--store-ref-actions", action="store_true", help="Store reference actions to .npy file."
+)
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
@@ -303,56 +309,59 @@ def main():
         # check for selected robots
         demo.update_selected_object()
 
-        obs_iterable = demo.env.unwrapped.observation_manager.get_active_iterable_terms(0)
-        for name, raw_value in obs_iterable:
-            if name == "policy-base_lin_acc":
-                imu_lin_acc = raw_value
-            if name == "policy-base_ang_vel":
-                imu_ang_vel = raw_value
-            if name == "policy-base_orientation":
-                imu_orientation = raw_value
-            if name == "policy-joint_pos":
-                joint_pos = raw_value
-            if name == "policy-joint_vel":
-                joint_vel = raw_value
-            if name == "policy-contact_forces":
-                contact_forces = raw_value
-            if name == "policy-gait_phase":
-                gait_phase = raw_value
+        if args_cli.hil:
+            obs_iterable = demo.env.unwrapped.observation_manager.get_active_iterable_terms(0)
+            for name, raw_value in obs_iterable:
+                if name == "policy-base_lin_acc":
+                    imu_lin_acc = raw_value
+                if name == "policy-base_ang_vel":
+                    imu_ang_vel = raw_value
+                if name == "policy-base_orientation":
+                    imu_orientation = raw_value
+                if name == "policy-joint_pos":
+                    joint_pos = raw_value
+                if name == "policy-joint_vel":
+                    joint_vel = raw_value
+                if name == "policy-contact_forces":
+                    contact_forces = raw_value
+                if name == "policy-gait_phase":
+                    gait_phase = raw_value
 
-        ros_node.publish_imu(imu_lin_acc, imu_ang_vel, imu_orientation)
-        ros_node.publish_joint_states([f"joint_{i}" for i in range(6)], joint_pos, joint_vel)
-        ros_node.publish_gait_phase(gait_phase)
-        ros_node.publish_feet_pressure(contact_forces)
+            ros_node.publish_imu(imu_lin_acc, imu_ang_vel, imu_orientation)
+            ros_node.publish_joint_states([f"joint_{i}" for i in range(6)], joint_pos, joint_vel)
+            ros_node.publish_gait_phase(gait_phase)
+            ros_node.publish_feet_pressure(contact_forces)
 
-        while not ros_node.new_action:
-            rclpy.spin_once(ros_node, timeout_sec=0.1)
-        ros_node.new_action = False
+            while not ros_node.new_action:
+                rclpy.spin_once(ros_node, timeout_sec=0.1)
+            ros_node.new_action = False
 
-        # 1D action tensor for env 0
-        bernard_action = ros_node.received_actions.to(demo.device).view(-1)
+            # 1D action tensor for env 0
+            bernard_action = ros_node.received_actions.to(demo.device).view(-1)
 
-        # Capture observation for env 0 before the step (used to compute ref_action)
-        obs0_to_log = obs[0, :].detach().cpu()
+            # Capture observation for env 0 before the step (used to compute ref_action)
+            obs0_to_log = obs[0, :].detach().cpu()
 
         with torch.inference_mode():
             action = demo.policy(obs)
-            ref_action = action[0, :].clone()
-            action[0, :] = bernard_action
+            if args_cli.hil:
+                ref_action = action[0, :].clone()
+                action[0, :] = bernard_action
             obs, _, _, _ = demo.env.step(action)
             # overwrite command based on keyboard input
             obs[:, 27:30] = demo.commands
 
-        # Log actions and save once after 1000 steps
-        if len(log_ref_actions) < max_log_steps:
-            log_ref_actions.append(ref_action.detach().cpu())
-            log_bernard_actions.append(bernard_action.detach().cpu())
-            log_obs0.append(obs0_to_log)
-            if len(log_ref_actions) == max_log_steps and not logs_saved:
-                np.save("ref_actions.npy", torch.stack(log_ref_actions).numpy())
-                np.save("bernard_actions.npy", torch.stack(log_bernard_actions).numpy())
-                np.save("obs0.npy", torch.stack(log_obs0).numpy())
-                logs_saved = True
+        if args_cli.store_ref_actions:
+            # Log actions and save once after 1000 steps
+            if len(log_ref_actions) < max_log_steps:
+                log_ref_actions.append(ref_action.detach().cpu())
+                log_bernard_actions.append(bernard_action.detach().cpu())
+                log_obs0.append(obs0_to_log)
+                if len(log_ref_actions) == max_log_steps and not logs_saved:
+                    np.save("ref_actions.npy", torch.stack(log_ref_actions).numpy())
+                    np.save("bernard_actions.npy", torch.stack(log_bernard_actions).numpy())
+                    np.save("obs0.npy", torch.stack(log_obs0).numpy())
+                    logs_saved = True
 
         rclpy.spin_once(ros_node, timeout_sec=0.0)
 

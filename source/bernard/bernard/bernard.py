@@ -62,7 +62,7 @@ BERNARD_CFG = ArticulationCfg(
     actuators={
         "ak60_6": ImplicitActuatorCfg(
             joint_names_expr=[".*_hip_.*", ".*_arm_.*", ".*_knee_.*"],
-            effort_limit_sim=6.7,
+            effort_limit_sim=9.0,
             velocity_limit_sim=15.0,
             stiffness={
                 ".*_hip_.*|.*_arm_.*|.*_knee_.*": 80.0,
