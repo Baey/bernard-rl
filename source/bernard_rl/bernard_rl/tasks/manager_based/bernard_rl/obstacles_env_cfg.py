@@ -4,6 +4,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import math
+import numpy as np
+import torch
+from copy import deepcopy
+import random
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
@@ -22,6 +26,17 @@ from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.assets import (
+    Articulation,
+    ArticulationCfg,
+    AssetBaseCfg,
+    RigidObject,
+    RigidObjectCfg,
+    RigidObjectCollection,
+    RigidObjectCollectionCfg,
+)
+from isaaclab.envs.mdp.curriculums import modify_env_param
+from isaaclab.envs.mdp.curriculums import modify_env_param as mdp_modify_env_param
 
 from . import mdp
 
@@ -67,6 +82,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
         debug_vis=False,
     )
 
+    # Make sure that the robot will face obstacles
     # robot
     robot: ArticulationCfg = BERNARD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
@@ -86,54 +102,117 @@ class BernardSceneCfg(InteractiveSceneCfg):
 
     # obstacle_usd_path = "/Isaac/Props/BasicShapes/cube.usd"
 
-    obstacle_1 = sim_utils.CuboidCfg(
-            size=(0.3, 0.3, 0.3),
-            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0)),
-            physics_material=sim_utils.RigidBodyMaterialCfg(
-                static_friction=1.0,
-                dynamic_friction=1.0,
-            ),
+    # obstacle_1 = sim_utils.CuboidCfg(
+    #         size=(0.3, 0.3, 0.3),
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #             disable_gravity=False,
+    #             kinematic_enabled=False,
+    #         ),
+    #     )
+
+    # obstacle_1.func(
+    #     prim_path="/World/Obstacle_1", cfg=obstacle_1, translation=(-0.2, 0.0, 2.0)
+    # )
+
+    # obstacle_2 = sim_utils.CuboidCfg(
+    #     size=(0.3, 0.3, 0.3),
+    #     rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #         disable_gravity=False,
+    #         kinematic_enabled=False,
+    #     )
+    # )
+
+    # obstacle_2.func(
+    #     prim_path="/World/Obstacle_2", cfg=obstacle_2, translation=(2.5, 0.5, 0.15)
+    # )
+
+    # obstacle_3 = sim_utils.CuboidCfg(
+    #         size=(0.3, 0.3, 0.3),
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #             disable_gravity=False,
+    #             kinematic_enabled=False,
+    #         ),
+    #     )
+    # obstacle_3.func(
+    #     prim_path="/World/Obstacle_3", cfg=obstacle_3, translation=(3.0, -0.5, 0.15)
+    # )
+
+    
+    obstacle_1 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Obstacle_1",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.1, 0.5, 0.15),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                disable_gravity=False,
-                kinematic_enabled=False,
+                disable_gravity=True,
+                kinematic_enabled=True,
             ),
-        )
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
 
-    obstacle_1.func(
-        "/World/Obstacle_1", obstacle_1, translation=(-0.2, 0.0, 2.0)
-    )
+            collision_props=sim_utils.CollisionPropertiesCfg(),
 
-    obstacle_2 = sim_utils.CuboidCfg(
-        size=(0.3, 0.3, 0.3),
-        visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.1, 0.8, 0.1)),  # green
-        physics_material=sim_utils.RigidBodyMaterialCfg(
-            static_friction=1.0,
-            dynamic_friction=1.0,
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0, 0.0), metallic=0.2),
         ),
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(
-            disable_gravity=False,
-            kinematic_enabled=False,
-        )
-        )
-
-    obstacle_2.func(
-        "/World/Obstacle_2", obstacle_2, translation=(2.5, 0.5, 0.15)
+        
+        init_state=ArticulationCfg.InitialStateCfg(
+        pos=(1.0, 0.0, 0.075)),
+        collision_group=-1
     )
 
-    obstacle_3 = sim_utils.CuboidCfg(
-            size=(0.3, 0.3, 0.3),
-            physics_material=sim_utils.RigidBodyMaterialCfg(
-                static_friction=1.0,
-                dynamic_friction=1.0,
-            ),
+    obstacle_2 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Obstacle_2",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.1, 0.5, 0.15),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                disable_gravity=False,
-                kinematic_enabled=False,
+                disable_gravity=True,
+                kinematic_enabled=True,
+        ),
+        mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
             ),
-        )
-    obstacle_3.func(
-        "/World/Obstacle_3", obstacle_3, translation=(3.0, -0.5, 0.15)
+            
+        init_state=ArticulationCfg.InitialStateCfg(
+        pos=(2.0, 0.0, 0.075)),
+        collision_group=-1
     )
+
+    obstacle_3 = RigidObjectCfg(
+        prim_path="{ENV_REGEX_NS}/Obstacle_3",
+        spawn=sim_utils.CuboidCfg(
+            size=(0.1, 0.5, 0.15),
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=True,
+                kinematic_enabled=True,
+            ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+
+            visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
+            
+        ),
+        init_state=ArticulationCfg.InitialStateCfg(
+        pos=(3.0, 0.0, 0.075)),
+        collision_group=-1
+    )
+
+    # rigid_object_collection_cfg = RigidObjectCollectionCfg()
+    # rigid_object_collection_cfg.rigid_objects = {"obstacle_1": obstacle_1, "obstacle_2": obstacle_2, "obstacle_3": obstacle_3}
+    # rigid_object_collection = RigidObjectCollection(cfg=rigid_object_collection_cfg)
+    # rigid_object_collections = {"obstacles": rigid_object_collection}
+
+
+    
+
+
+    # assign to a proper container field expected by InteractiveScene
+    # assets = {
+    #     "obstacle_1": obstacle_1,
+    #     "obstacle_2": obstacle_2,
+    #     "obstacle_3": obstacle_3,
+    # }
 
     # lights
     sky_light = AssetBaseCfg(
@@ -432,7 +511,7 @@ class EventCfg:
             "pose_range": {
                 "x": (-0.0, 0.0),
                 "y": (-0.0, 0.0),
-                "yaw": (-3.14, 3.14),
+                "yaw": (0.0, 0.0),
                 "z": (0.0, 0.15),
             },
             "velocity_range": {
@@ -462,6 +541,36 @@ class EventCfg:
         interval_range_s=(5.0, 6.5),
         params={"velocity_range": {"x": (0.1, 0.1), "y": (0.4, 0.5)}},
     )
+
+    
+    # randomize_obstacle_height = EventTerm(
+    #     mode="reset",
+    #     params={
+    #         "obstacle_cfgs": [
+    #             SceneEntityCfg("Obstacle_1"),
+    #             SceneEntityCfg("Obstacle_2"),
+    #             SceneEntityCfg("Obstacle_3"),
+    #         ],
+    #         "x": [1.0, 2.0, 3.0],
+    #         "y": [0.0, 0.0, 0.0],
+    #         "z_range": [
+    #             (0.05, 0.3),
+    #             (0.05, 0.3),
+    #             (0.05, 0.3),
+    #         ],
+    #     },
+    #     func=lambda env, params: [
+    #         env.scene.rigid_objects[params["obstacle_cfgs"][i].name].set_pose(
+    #             position=(
+    #                 params["x"][i],
+    #                 params["y"][i],
+    #                 np.random.uniform(*params["z_range"][i])
+    #             ),
+    #             orientation=(0.0, 0.0, 0.0, 1.0)  # upright
+    #         )
+    #         for i in range(len(params["obstacle_cfgs"]))
+    #     ]
+    # )
 
 
 @configclass
@@ -609,9 +718,224 @@ class TerminationsCfg:
     )
 
 
+def randomize_heights(env, env_ids, old_value, z_ranges):
+    for i, val in enumerate(old_value):
+        # Update the Z coordinate in-place
+        val[2] = np.random.uniform(*z_ranges[i])
+        # Apply the new pose to the actual environment object
+        obstacle = env.scene.rigid_objects[i]  # assuming i corresponds to the right obstacle
+        obstacle.set_pose(
+            position=val,
+            orientation=(0.0, 0.0, 0.0, 1.0)  # upright
+        )
+
+
+# def resample_obstacle_heights(env, env_ids, old_value, z_ranges):
+#     """
+#     Randomize obstacle heights at reset or during curriculum updates.
+
+#     Args:
+#         env: the IsaacLab environment
+#         env_ids: list of environment indices
+#         old_value: current obstacle positions (tensor or list)
+#         z_ranges: list of (min, max) tuples for each obstacle
+
+#     Returns:
+#         Updated heights for each obstacle, same shape as old_value, or NO_CHANGE
+#     """
+#     # Randomize heights for each obstacle in env_ids
+#     new_value = old_value.clone() if isinstance(old_value, torch.Tensor) else old_value.copy()
+
+#     for i in range(len(env_ids)):
+#         for j, (z_min, z_max) in enumerate(z_ranges):
+#             new_z = np.random.uniform(z_min, z_max)
+#             new_value[i, j, 2] = new_z  # assuming shape (env, obstacle, xyz)
+
+#     return new_value
+
+# def resample_obstacle_heights(env, env_ids, old_value, z_ranges):
+#     """
+#     Randomize the z positions (heights) of all obstacles directly via env.scene.
+
+#     Args:
+#         env: ManagerBasedRLEnv environment instance
+#         env_ids: IDs of environments to update
+#         old_value: unused (we modify in-place)
+#         z_ranges: list of (min, max) tuples for each obstacle
+#     """
+#     # Loop through environments and obstacles
+#     new_values = []
+#     for env_id in env_ids:
+#         for i, (z_min, z_max) in enumerate(z_ranges):
+#             new_z = np.random.uniform(z_min, z_max)
+
+#             # Retrieve the obstacle handle from the scene
+#             obstacle_name = f"obstacle_{i+1}"
+#             obstacle = getattr(env.scene, obstacle_name, None)
+#             if obstacle is None:
+#                 print("obstacle is None")
+#                 continue
+
+#             # Get current pose and update z
+#             pose = obstacle.data.root_state_w[env_id].clone()
+#             pose[2] = new_z  # modify z position
+#             obstacle.write_root_state_to_sim(pose, env_ids=[env_id])
+#             new_values.append(new_z)
+
+#     # Return NO_CHANGE because we updated in-place
+#     return new_values
+
+# def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=1):
+#     """
+#     Randomize the Z-position (height) of obstacles periodically or at reset.
+
+#     This function is used by mdp.modify_env_param to modify
+#     addresses such as scene.obstacle_1.init_state.pos.
+
+#     Args:
+#         env: The IsaacLab environment.
+#         env_ids: The list of environment indices to modify.
+#         old_value: The current tensor value of the addressed parameter
+#                    (e.g. shape [num_envs, 3] for positions).
+#         z_ranges: A list of (min, max) tuples specifying sampling ranges for Z.
+#         every_n_steps: Only randomize every N global steps.
+
+#     Returns:
+#         torch.Tensor or modify_env_param.NO_CHANGE
+#     """
+
+#     # Only modify at specific intervals (to avoid jitter every frame)
+#     if env.common_step_counter % every_n_steps != 0:
+#         return modify_env_param.NO_CHANGE
+
+#     # For each environment, assign a random Z height
+#     z_min, z_max = z_ranges[0]
+#     random_z = random.uniform(z_min, z_max)
+#     new_value = (old_value[0], old_value[1], random_z) # modify Z component
+
+#     return new_value
+
+# def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=5000):
+#     """
+#     Randomize the Z-position (height) of obstacles periodically or at reset.
+#     Works on live RigidObject positions.
+
+#     Args:
+#         env: IsaacLab environment
+#         env_ids: list of environment indices
+#         old_value: placeholder (not used)
+#         z_ranges: list of (min, max) tuples for each obstacle
+#         every_n_steps: only randomize every N global steps
+
+#     Returns:
+#         torch.Tensor or mdp_modify_env_param.NO_CHANGE
+#     """
+#     if env.common_step_counter % every_n_steps != 0:
+#         return mdp_modify_env_param.NO_CHANGE
+
+#     # Iterate over all envs and obstacles
+#     new_positions = []
+#     for i, env_idx in enumerate(env_ids):
+#         # Copy current positions
+#         env_pos = []
+#         for j, obstacle_name in enumerate(["obstacle_1", "obstacle_2", "obstacle_3"]):
+#             obj = env.scene.rigid_objects[obstacle_name]
+#             pose = obj.get_world_pose([env_idx])  # returns [pos, rot]
+#             pos, rot = pose
+#             z_min, z_max = z_ranges[j]
+#             pos[0, 2] = random.uniform(z_min, z_max)  # change Z
+#             # Apply new pose immediately
+#             obj.set_world_pose(pos, rot, [env_idx])
+#             env_pos.append(pos[0])  # only the first env in list
+#         new_positions.append(env_pos)
+
+#     return torch.tensor(new_positions, device="cpu")
+
+
+def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=5000):
+    """
+    Randomize the Z-position (height) of all rigid obstacles in the environment.
+
+    Args:
+        env: IsaacLab environment instance.
+        env_ids: List of environment indices being reset/updated.
+        old_value: Placeholder (not used).
+        z_ranges: List of (min_z, max_z) tuples per obstacle or a single tuple for all.
+        every_n_steps: Update frequency in environment steps.
+
+    Returns:
+        modify_env_param.NO_CHANGE (since we modify in-place)
+    """
+    # --- Update only at specified intervals ---
+    if env.common_step_counter % every_n_steps != 0:
+        return modify_env_param.NO_CHANGE
+
+    # --- Access live RigidObjects in the scene ---
+    rigid_objects = env.scene.rigid_objects
+
+    # Normalize z_ranges if single range is given
+    if len(z_ranges) == 1:
+        z_ranges = z_ranges * len(rigid_objects)
+
+    # --- For each obstacle, randomize its Z position ---
+    for i, (name, obj) in enumerate(rigid_objects.items()):
+        # Get current positions (tensor shape [num_envs, 3])
+        pos = obj.data.root_link_pose_w
+
+        # Randomize z for only selected env_ids
+        z_min, z_max = z_ranges[i]
+        new_z = torch.empty(len(env_ids), device=pos.device).uniform_(z_min, z_max)
+        pos[env_ids, 2] = new_z
+
+        # Optional: freeze rotation (keep same quat)
+        # obj.root_quat_w[env_ids] = obj.root_quat_w[env_ids]
+
+        # Push updated state to the simulation
+        obj.write_root_pose_to_sim(root_pose=pos)
+
+    return modify_env_param.NO_CHANGE
+
+
+
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
+
+    # height_curriculum_1 = CurrTerm(
+    #     func=mdp.modify_env_param,
+    #     params={
+    #         "address": "scene.rigid_objects.obstacle_1.cfg.init_state.pos",
+    #         "modify_fn": resample_obstacle_heights,
+    #         "modify_params": {"z_ranges": [(0.05, 0.3)]},
+    #     },
+    # )
+
+    # height_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_env_param,
+    #     params={
+    #         "address": "scene.rigid_objects.obstacle_2.cfg.init_state.pos",
+    #         "modify_fn": resample_obstacle_heights,
+    #         "modify_params": {"z_ranges": [(0.05, 0.3)]},
+    #     },
+    # )
+
+    # height_curriculum_3 = CurrTerm(
+    #     func=mdp.modify_env_param,
+    #     params={
+    #         "address": "scene.rigid_objects.obstacle_3.cfg.init_state.pos",
+    #         "modify_fn": resample_obstacle_heights,
+    #         "modify_params": {"z_ranges": [(0.05, 0.3)]},
+    #     },
+    # )
+
+    height_curriculum_1 = CurrTerm(
+        func=mdp_modify_env_param,
+        params={
+            "address": "scene.rigid_objects",  # live objects container
+            "modify_fn": resample_obstacle_heights,
+            "modify_params": {"z_ranges": [(0.05, 0.3), (0.05, 0.3), (0.05, 0.3)], "every_n_steps": 1},
+        },
+    )
 
     push_robot_curriculum = CurrTerm(
         func=mdp.push_robot_levels,

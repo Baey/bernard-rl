@@ -46,6 +46,7 @@ BERNARD_CFG = ArticulationCfg(
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.4),
+        #rot=(0, 0, 0, 0),
         joint_pos={
             "r_hip_joint": 0.03,
             "l_hip_joint": -0.03,

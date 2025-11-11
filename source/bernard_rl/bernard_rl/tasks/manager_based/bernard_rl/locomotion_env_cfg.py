@@ -411,6 +411,8 @@ class EventCfg:
         params={"velocity_range": {"x": (0.1, 0.1), "y": (0.4, 0.5)}},
     )
 
+    
+
 
 @configclass
 class RewardsCfg:
