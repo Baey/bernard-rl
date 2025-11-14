@@ -20,12 +20,13 @@ from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sensors import ContactSensorCfg, ImuCfg  # , RayCasterCfg, patterns
+from isaaclab.sensors import ContactSensorCfg, ImuCfg, CameraCfg   # , RayCasterCfg, patterns
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.utils.modifiers import ModifierCfg
 from isaaclab.assets import (
     Articulation,
     ArticulationCfg,
@@ -40,7 +41,7 @@ from isaaclab.envs.mdp.curriculums import modify_env_param as mdp_modify_env_par
 
 from . import mdp
 
-from bernard import BERNARD_CFG  # isort:skip
+from bernard import BERNARD_WITH_CAMERA_CFG  # isort:skip
 
 CURRICULUM_STAGE_1_STEPS = 50_000
 CURRICULUM_STAGE_2_STEPS = 150_000
@@ -55,6 +56,9 @@ def override_velocity_command_range(env, env_ids, old_value, value, num_steps):
     if env.common_step_counter > num_steps:
         return value
     return mdp.modify_term_cfg.NO_CHANGE
+
+def flatten_tensor(tensor):
+    return tensor.view(-1)
 
 
 @configclass
@@ -84,7 +88,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
 
     # Make sure that the robot will face obstacles
     # robot
-    robot: ArticulationCfg = BERNARD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+    robot: ArticulationCfg = BERNARD_WITH_CAMERA_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
     # contact sensors
     contact_forces = ContactSensorCfg(
@@ -98,6 +102,14 @@ class BernardSceneCfg(InteractiveSceneCfg):
         debug_vis=True,
         update_period=0.01,
         # offset=ImuCfg.OffsetCfg(pos=(-0.07007606, -0.07839134, -0.23643290)),
+    )
+
+    camera = CameraCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/rsd455/RSD455/Camera_Pseudo_Depth",
+        spawn=None,
+        width=64,
+        height=48,
+        data_types=["depth"],
     )
 
     # obstacle_usd_path = "/Isaac/Props/BasicShapes/cube.usd"
@@ -141,7 +153,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_1",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.15),
+            size=(0.1, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -154,14 +166,14 @@ class BernardSceneCfg(InteractiveSceneCfg):
         ),
         
         init_state=ArticulationCfg.InitialStateCfg(
-        pos=(1.0, 0.0, 0.075)),
+        pos=(1.0, 0.0, 0.025)),
         collision_group=-1
     )
 
     obstacle_2 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_2",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.15),
+            size=(0.1, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -174,14 +186,14 @@ class BernardSceneCfg(InteractiveSceneCfg):
             ),
             
         init_state=ArticulationCfg.InitialStateCfg(
-        pos=(2.0, 0.0, 0.075)),
+        pos=(2.0, 0.0, 0.025)),
         collision_group=-1
     )
 
     obstacle_3 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_3",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.15),
+            size=(0.1, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -194,7 +206,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
             
         ),
         init_state=ArticulationCfg.InitialStateCfg(
-        pos=(3.0, 0.0, 0.075)),
+        pos=(3.0, 0.0, 0.025)),
         collision_group=-1
     )
 
@@ -343,6 +355,10 @@ class ObservationsCfg:
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, params={"command_name": "base_velocity"}
         )
+        camera = ObsTerm(
+            func=mdp.image,
+            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth", "flatten": True},
+        )
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
@@ -417,6 +433,10 @@ class ObservationsCfg:
         )
         velocity_commands = ObsTerm(
             func=mdp.generated_commands, params={"command_name": "base_velocity"}
+        )
+        camera = ObsTerm(
+            func=mdp.image,
+            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth", "flatten": True}
         )
         actions = ObsTerm(func=mdp.last_action)
 
@@ -933,7 +953,7 @@ class CurriculumCfg:
         params={
             "address": "scene.rigid_objects",  # live objects container
             "modify_fn": resample_obstacle_heights,
-            "modify_params": {"z_ranges": [(0.05, 0.3), (0.05, 0.3), (0.05, 0.3)], "every_n_steps": 1},
+            "modify_params": {"z_ranges": [(-0.025, 0.025), (-0.025, 0.025), (-0.025, 0.025)], "every_n_steps": 1},
         },
     )
 

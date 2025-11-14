@@ -186,7 +186,7 @@ def main():
     timestep = 0
     observations = []
     robot = env.unwrapped.scene["robot"]
-    body_names = ['body', 'l_foot', 'r_foot', 'l_arm', 'r_arm', 'l_forearm', 'r_forearm', 'l_hip', 'r_hip']
+    body_names = ['body', 'l_foot', 'r_foot', 'l_arm', 'r_arm', 'l_forearm', 'r_forearm', 'l_hip', 'r_hip', 'rsd455']
     body_idx = [robot.data.body_names.index(name) for name in body_names]
 
     trajectory = {
