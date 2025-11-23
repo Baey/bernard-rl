@@ -109,6 +109,7 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": f"{__name__}.obstacles_env_cfg:BernardFlatWithObstaclesEnvCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_locomotion_cfg.yaml",
+        "skrl_conv_cfg_entry_point": f"{agents.__name__}:skrl_ppo_conv_locomotion_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:BernardLocomotionPPORunnerCfg",
     },
 )

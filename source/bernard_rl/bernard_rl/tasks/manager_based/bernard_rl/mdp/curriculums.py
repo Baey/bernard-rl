@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
+
 """Common functions that can be used to create curriculum for the learning environment.
 
 The functions can be passed to the :class:`isaaclab.managers.CurriculumTermCfg` object to enable
@@ -23,6 +24,23 @@ from isaaclab.envs.mdp import UniformVelocityCommandCfg
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
+from datetime import datetime
+import numpy as np
+import torch
+from sklearn.mixture import GaussianMixture
+from sklearn.neighbors import NearestNeighbors
+from collections import deque
+import random
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.callbacks import EvalCallback, BaseCallback
+from stable_baselines3 import SAC
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import numpy as np
+from gymnasium import spaces
+from pathlib import Path
+import os
 
 def terrain_levels_vel(
     env: ManagerBasedRLEnv, env_ids: Sequence[int], asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
@@ -202,3 +220,204 @@ def modify_reward_weight(env: ManagerBasedRLEnv, env_ids: Sequence[int], term_na
         # update term settings
         term_cfg.weight = weight
         env.reward_manager.set_term_cfg(term_name, term_cfg)
+
+
+
+def proportional_choice(v, random_state, eps=0.):
+    if np.sum(v) == 0 or random_state.rand() < eps:
+        return random_state.randint(np.size(v))
+    else:
+        probas = np.array(v) / np.sum(v)
+        return np.where(random_state.multinomial(1, probas) == 1)[0][0]
+
+def _get_covariance_matrix(gmm, idx, save_path=None):
+    cov_type = gmm.covariance_type
+    if cov_type == 'full':
+        return gmm.covariances_[idx]
+    elif cov_type == 'tied':
+        return gmm.covariances_
+    elif cov_type == 'diag':
+        return np.diag(gmm.covariances_[idx])
+    elif cov_type == 'spherical':
+        D = gmm.means_.shape[1]
+        return np.eye(D) * gmm.covariances_[idx]
+    
+def scale_to_range(x, old_min, old_max, new_min, new_max):
+    return new_min + (x - old_min) * (new_max - new_min) / (old_max - old_min)
+    
+def plot_gmm_2d(gmm, tasks_scaled, alps, save_path=None):
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    # Normalize ALP values for colormap
+    norm = mpl.colors.Normalize(vmin=0, vmax=1)
+    cmap = mpl.colormaps["hot_r"]  # red = high ALP
+
+    # Scatter plot with ALP coloring
+    for point, alp in zip(tasks_scaled, alps):
+        ax.scatter(np.array(point[0]), np.array(point[1]), color=cmap(norm(alp)), s=8, alpha=0.8)
+
+    # Plot GMM components as ellipses
+    for i in range(gmm.n_components):
+        mean = gmm.means_[i]
+        cov = _get_covariance_matrix(gmm, i)
+
+        # Ensure covariance is 2x2 for 2D plotting
+        cov_2d = cov[:2, :2] if cov.shape[0] > 2 else cov
+        lambda_, v = np.linalg.eigh(cov_2d)
+        lambda_ = np.sqrt(lambda_)
+        angle = np.degrees(np.arctan2(*v[:, 0][::-1]))
+
+        ellipse = Ellipse(
+            xy=mean,
+            width=2 * lambda_[0],
+            height=2 * lambda_[1],
+            angle=angle,
+            alpha=0.3,
+            color='blue'
+        )
+        ax.add_patch(ellipse)
+
+    ax.set_xlabel("Wysokość przeszkody")
+    ax.set_ylabel("Odległość między przeszkodami")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+
+    sm = mpl.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, ax=ax)
+    cbar.set_label("Absolute Learning Progress")
+
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+        print(f"✅ GMM plot saved to {save_path}")
+    else:
+        plt.show()
+
+    plt.close(fig)
+
+class ALPGMMTeacher():
+    def __init__(self, model, param_bounds, env_type, max_history=250, fit_every=20, **kwargs):
+        self.log_dir = Path.cwd() / Path("logs") / Path(datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + f"_ppo_torch")
+        self.seed = 12345
+        self.param_bounds = param_bounds
+        self.max_history = max_history
+        self.task_history = deque(maxlen=max_history)
+        self.alp_history = deque(maxlen=max_history)
+        self.reward_history = deque(maxlen=None)
+        self.gmm = None
+        self.fit_every = fit_every
+        self.steps = 0
+        self.gmm_components = 2*(len(param_bounds)+1)
+        self.knn = NearestNeighbors(n_neighbors=1, algorithm='kd_tree')
+        os.makedirs(Path(self.log_dir) / Path("gmm_plots"), exist_ok=True)
+
+        self.mins = np.array([low for (low, _) in self.param_bounds])
+        self.maxs = np.array([high for (_, high) in self.param_bounds])
+
+        self.random_state = np.random.RandomState(self.seed)
+        self.update_every = 2000
+        
+
+    def sample_task(self):
+        self.steps += 1
+
+        if self.gmm is None or np.random.rand() < 0.2 or len(self.task_history) < 200:
+            return self._sample_random()
+
+        self.alp_means = [mean[-1] for mean in self.gmm.means_]
+        idx = proportional_choice(self.alp_means, self.random_state)
+
+        # Sample from the selected GMM component
+        new_task = self.random_state.multivariate_normal(
+            self.gmm.means_[idx], _get_covariance_matrix(self.gmm, idx)
+        )
+
+        # Inverse-transform GMM-scaled data
+        print(f"new task: {new_task}")
+        new_task = self._inverse_scale_task(np.array([new_task.reshape(1, -1)[0][:-1]])).T  # Remove ALP dim and transpose 
+        print(f"new task after inverse transform: {new_task}")
+
+        # Clip to bounds
+        new_task = np.clip(new_task, self.mins, self.maxs).astype(np.float32)
+        print(f"new task after clipping: {new_task[0, :]}")
+
+        return new_task[0, :]
+
+    def update(self, task, reward):
+        """Call this after evaluating agent on a task."""
+
+        alp = self._compute_alp(task, reward)
+
+        self.reward_history.append(reward)
+        self.task_history.append(task)
+        self.alp_history.append(alp)
+
+        print(f"Timestep: {self.steps}")
+        if self.steps % self.fit_every == 0 and self.steps != 0 and len(self.task_history) >= 10:
+            self._fit_gmm()
+            
+
+
+    def _sample_random(self):
+        return np.array([(high-low) * self.random_state.rand() + low for (low, high) in self.param_bounds])
+
+    def _clip_task(self, task):
+        return np.clip(task, [low for (low, _) in self.param_bounds], [high for (_, high) in self.param_bounds])
+    
+    def _scale_task(self, task):
+        scaled_task = np.array([
+            scale_to_range(task[:, i], self.mins[i], self.maxs[i], 0, 1)
+            for i in range(task.shape[1])
+        ]).T
+        return scaled_task
+    
+    def _inverse_scale_task(self, scaled_task):
+        inv_scaled_task = np.array([
+            scale_to_range(scaled_task[:, i], 0, 1, self.mins[i], self.maxs[i])
+            for i in range(len(scaled_task[0]))
+        ])
+        return inv_scaled_task
+    
+    def _scale_alp(self, alp):
+        if len(self.alp_history) == 0:
+            return alp
+        
+        min_alp = np.min(self.alp_history)
+        max_alp = np.max(self.alp_history)
+        if max_alp == min_alp:
+            return 0.0
+        return (alp - min_alp) / (max_alp - min_alp)
+
+    def _fit_gmm(self):
+        tasks = np.array(self.task_history)
+        alps = np.array(self.alp_history)
+
+        tasks_scaled = self._scale_task(tasks)
+        alps_scaled = self._scale_alp(alps.reshape(-1, 1))
+
+        X_scaled = np.hstack([tasks_scaled, alps_scaled])
+
+        gmm_configs = [
+            {"n_components": n_components, "covariance_type": "full"} for n_components in range(2, self.gmm_components + 1)
+        ]
+        final_n_components = None
+
+        self.gmm = None
+        for config in gmm_configs:
+            gmm = GaussianMixture(**config, random_state=self.seed)
+            gmm.fit(X_scaled)
+            if self.gmm is None or gmm.aic(X_scaled) < self.gmm.aic(X_scaled):
+                self.gmm = gmm
+                final_n_components = config["n_components"]
+
+        print(f"Fitted GMM with {final_n_components} components after {self.steps} steps.")
+        plot_gmm_2d(self.gmm, tasks_scaled, alps_scaled, save_path=self.log_dir / Path(f"gmm_plots/gmm_step_{self.steps}.png"))
+
+    def _compute_alp(self, task, reward):
+        if len(self.task_history) == 0:
+            return 0.0
+        
+        self.knn.fit(self.task_history)
+        distances, indices = self.knn.kneighbors([task], n_neighbors=1)
+        reward_old = self.reward_history[indices[0][0]]
+        return abs(reward - reward_old)

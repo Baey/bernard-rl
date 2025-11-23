@@ -18,6 +18,8 @@ import sys
 
 from isaaclab.app import AppLauncher
 
+
+
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Train an RL agent with skrl.")
 parser.add_argument("--video", action="store_true", default=False, help="Record videos during training.")
@@ -99,10 +101,11 @@ from isaaclab.utils.dict import print_dict
 from isaaclab.utils.io import dump_pickle, dump_yaml
 from isaaclab_rl.skrl import SkrlVecEnvWrapper
 from isaaclab_tasks.utils.hydra import hydra_task_config
+from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
 # config shortcuts
 algorithm = args_cli.algorithm.lower()
-agent_cfg_entry_point = "skrl_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
+agent_cfg_entry_point = "skrl_conv_cfg_entry_point" if algorithm in ["ppo"] else f"skrl_{algorithm}_cfg_entry_point"
 
 
 @hydra_task_config(args_cli.task, agent_cfg_entry_point)
@@ -158,7 +161,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
-
+    print("\n\n\n")
+    print(f"env methods: {env.unwrapped.__dir__()}")
+    print("\n\n\n")
+    print("Wrapped observation space just after creation:", env.observation_space)
     # convert to single-agent instance if required by the RL algorithm
     if isinstance(env.unwrapped, DirectMARLEnv) and algorithm in ["ppo"]:
         env = multi_agent_to_single_agent(env)
@@ -176,7 +182,10 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
         env = gym.wrappers.RecordVideo(env, **video_kwargs)
 
     # wrap around environment for skrl
-    env = SkrlVecEnvWrapper(env, ml_framework=args_cli.ml_framework)  # same as: `wrap_env(env, wrapper="auto")`
+    print("Wrapped observation space before wrapping:", env.unwrapped.observation_space)
+    print(f"Type of environment before wrapping: {type(env.unwrapped)}")
+    env = SkrlVecEnvWrapper(env, ml_framework=args_cli.ml_framework, wrapper="auto")  # same as: `wrap_env(env, wrapper="auto")`
+    print("Wrapped observation space:", env.observation_space)
 
     # configure and instantiate the skrl runner
     # https://skrl.readthedocs.io/en/latest/api/utils/runner.html

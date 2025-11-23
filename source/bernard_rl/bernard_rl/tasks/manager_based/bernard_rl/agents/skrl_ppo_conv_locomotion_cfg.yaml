@@ -1,0 +1,109 @@
+seed: 42
+
+
+# Models are instantiated using skrl's model instantiator utility
+# https://skrl.readthedocs.io/en/latest/api/utils/model_instantiators.html
+models:
+  separate: False
+  policy:
+    class: GaussianMixin
+    clip_actions: True
+    clip_log_std: True
+    min_log_std: -20.0
+    max_log_std: 2.0
+    initial_log_std: 0.0
+    network:
+      - name: cnn_camera
+        input: permute(STATES["camera"], (0, 3, 1, 2))
+        layers: 
+          - conv2d: {out_channels: 16, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 32, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
+          - flatten
+        activations: elu
+        type: CNN
+      - name: mlp_rest
+        input: concatenate([STATES["actions"], STATES["base_lin_acc"], STATES["base_ang_vel"], STATES["base_orientation"], STATES["joint_pos"], STATES["joint_vel"], STATES["contact_forces"], STATES["gait_phase"], STATES["velocity_commands"]])
+        layers: [512, 256]
+        activations: elu
+        type: MLP
+      - name: combined
+        input: concatenate([cnn_camera, mlp_rest])
+        layers: [256, 128]
+        activations: elu
+    output: ACTIONS
+
+  value:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: cnn_camera
+        input: permute(STATES["camera"], (0, 3, 1, 2))
+        layers: 
+          - conv2d: {out_channels: 16, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 32, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
+          - flatten
+        activations: elu
+        type: CNN
+      - name: mlp_rest
+        input: concatenate([STATES["actions"], STATES["base_lin_acc"], STATES["base_ang_vel"], STATES["base_orientation"], STATES["joint_pos"], STATES["joint_vel"], STATES["contact_forces"], STATES["gait_phase"], STATES["velocity_commands"]])
+        layers: [512, 256]
+        activations: elu
+        type: MLP
+      - name: combined
+        input: concatenate([cnn_camera, mlp_rest])
+        layers: [256, 128]
+        activations: elu
+    output: ONE
+
+
+# Rollout memory
+# https://skrl.readthedocs.io/en/latest/api/memories/random.html
+memory:
+  class: RandomMemory
+  memory_size: -1  # automatically determined (same as agent:rollouts)
+
+
+# PPO agent configuration (field names are from PPO_DEFAULT_CONFIG)
+# https://skrl.readthedocs.io/en/latest/api/agents/ppo.html
+agent:
+  class: PPO
+  rollouts: 64
+  learning_epochs: 8
+  mini_batches: 4
+  discount_factor: 0.99
+  lambda: 0.95
+  learning_rate: 1.0e-03
+  learning_rate_scheduler: KLAdaptiveLR
+  learning_rate_scheduler_kwargs:
+    kl_threshold: 0.01
+  state_preprocessor: null
+  state_preprocessor_kwargs: null
+  value_preprocessor: null
+  value_preprocessor_kwargs: null
+  random_timesteps: 0
+  learning_starts: 0
+  grad_norm_clip: 1.0
+  ratio_clip: 0.2
+  value_clip: 0.2
+  clip_predicted_values: True
+  entropy_loss_scale: 0.01
+  value_loss_scale: 1.0
+  kl_threshold: 0.0
+  rewards_shaper_scale: 1.0
+  time_limit_bootstrap: True
+  # logging and checkpoint
+  experiment:
+    directory: "bernard_locomotion"
+    experiment_name: ""
+    write_interval: auto
+    checkpoint_interval: auto
+
+
+# Sequential trainer
+# https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
+trainer:
+  class: SequentialTrainer
+  timesteps: 450000
+  environment_info: log

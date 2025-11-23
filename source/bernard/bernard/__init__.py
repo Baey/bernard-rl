@@ -9,6 +9,6 @@ Python module with the BERNARD robot model and configuration.
 """
 
 # Register Gym environments.
-from .bernard import BERNARD_CFG, BERNARD_WITH_CAMERA_CFG
+from .bernard import BERNARD_CFG, BERNARD_WITH_CAMERA_CFG, BERNARD_WITH_CAMERA2_CFG
 
-__all__ = ["BERNARD_CFG", "BERNARD_WITH_CAMERA_CFG"]
+__all__ = ["BERNARD_CFG", "BERNARD_WITH_CAMERA_CFG", "BERNARD_WITH_CAMERA2_CFG"]
