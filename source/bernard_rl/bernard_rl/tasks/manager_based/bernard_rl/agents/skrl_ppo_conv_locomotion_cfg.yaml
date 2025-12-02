@@ -16,9 +16,8 @@ models:
       - name: cnn_camera
         input: permute(STATES["camera"], (0, 3, 1, 2))
         layers: 
-          - conv2d: {out_channels: 16, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 8, kernel_size: 3, stride: 2}
           - conv2d: {out_channels: 32, kernel_size: 3, stride: 2}
-          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
           - flatten
         activations: elu
         type: CNN
@@ -29,7 +28,7 @@ models:
         type: MLP
       - name: combined
         input: concatenate([cnn_camera, mlp_rest])
-        layers: [256, 128]
+        layers: [256]
         activations: elu
     output: ACTIONS
 
@@ -40,9 +39,8 @@ models:
       - name: cnn_camera
         input: permute(STATES["camera"], (0, 3, 1, 2))
         layers: 
-          - conv2d: {out_channels: 16, kernel_size: 3, stride: 2}
+          - conv2d: {out_channels: 8, kernel_size: 3, stride: 2}
           - conv2d: {out_channels: 32, kernel_size: 3, stride: 2}
-          - conv2d: {out_channels: 64, kernel_size: 3, stride: 2}
           - flatten
         activations: elu
         type: CNN
@@ -53,7 +51,7 @@ models:
         type: MLP
       - name: combined
         input: concatenate([cnn_camera, mlp_rest])
-        layers: [256, 128]
+        layers: [256]
         activations: elu
     output: ONE
 
