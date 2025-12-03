@@ -113,8 +113,8 @@ class BernardSceneCfg(InteractiveSceneCfg):
     camera = TiledCameraCfg(
         prim_path="{ENV_REGEX_NS}/Robot/rsd455/RSD455/Camera_Pseudo_Depth",
         spawn=None,
-        width=64,
-        height=48,
+        width=48,
+        height=36,
         data_types=["depth"],
     )
  
