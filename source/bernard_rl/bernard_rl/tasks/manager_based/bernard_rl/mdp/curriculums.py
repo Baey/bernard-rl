@@ -296,7 +296,7 @@ def plot_gmm_2d(gmm, tasks_scaled, alps, save_path=None):
     plt.close(fig)
 
 class ALPGMMTeacher():
-    def __init__(self, model, param_bounds, env_type, max_history=250, fit_every=20, **kwargs):
+    def __init__(self, model, param_bounds, env_type, max_history=250, fit_every=300, **kwargs):
         self.log_dir = Path.cwd() / Path("logs") / Path(datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + f"_ppo_torch")
         self.seed = 12345
         self.param_bounds = param_bounds
@@ -411,7 +411,8 @@ class ALPGMMTeacher():
                 final_n_components = config["n_components"]
 
         print(f"Fitted GMM with {final_n_components} components after {self.steps} steps.")
-        plot_gmm_2d(self.gmm, tasks_scaled, alps_scaled, save_path=self.log_dir / Path(f"gmm_plots/gmm_step_{self.steps}.png"))
+        if self.steps % 2*self.fit_every == 0:
+            plot_gmm_2d(self.gmm, tasks_scaled, alps_scaled, save_path=self.log_dir / Path(f"gmm_plots/gmm_step_{self.steps}.png"))
 
     def _compute_alp(self, task, reward):
         if len(self.task_history) == 0:

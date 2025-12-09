@@ -111,7 +111,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     )
 
     camera = TiledCameraCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/rsd455/RSD455/Camera_Pseudo_Depth",
+        prim_path="{ENV_REGEX_NS}/Robot/Realsense/RSD455/Camera_Pseudo_Depth",
         spawn=None,
         width=48,
         height=36,
@@ -121,7 +121,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_1 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_1",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -137,7 +137,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_2 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_2",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -153,7 +153,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_3 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_3",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -169,7 +169,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_4 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_4",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -185,7 +185,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_5 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_5",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -201,7 +201,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_6 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_6",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -217,7 +217,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_7 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_7",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -233,7 +233,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_8 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_8",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -249,7 +249,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_9 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_9",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -265,7 +265,7 @@ class BernardSceneCfg(InteractiveSceneCfg):
     obstacle_10 = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Obstacle_10",
         spawn=sim_utils.CuboidCfg(
-            size=(0.1, 0.5, 0.10),
+            size=(0.05, 0.5, 0.10),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=True,
                 kinematic_enabled=True,
@@ -334,13 +334,13 @@ class CommandsCfg:
     base_velocity = mdp.UniformVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(8.0, 10.0),
-        rel_standing_envs=0.1,
+        rel_standing_envs=0.02,
         rel_heading_envs=1.0,
         heading_command=True,
         heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.0, 0.0),
+            lin_vel_x=(0.3, 0.5),
             lin_vel_y=(-0.0, 0.0),
             ang_vel_z=(-0.0, 0.0),
             heading=(-0.0, 0.0),
@@ -411,7 +411,7 @@ class ObservationsCfg:
         )
         camera = ObsTerm(
             func=mdp.image,
-            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth", "flatten": False}
+            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth"}
         )
         
 
@@ -492,7 +492,7 @@ class ObservationsCfg:
         )
         camera = ObsTerm(
             func=mdp.image,
-            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth", "flatten": False}
+            params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth"}
         )
         
 
@@ -659,7 +659,7 @@ class RewardsCfg:
     # -- task
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=0.0,
+        weight=1.5,
         params={"command_name": "base_velocity", "std": math.sqrt(0.19)},
     )
     track_ang_vel_z_exp = RewTerm(
@@ -833,6 +833,8 @@ def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=5
     # --- Access live RigidObjects in the scene ---
     rigid_objects = env.scene.rigid_objects
 
+    env_origins = env.scene.env_origins[env_ids]
+
     # --- For each obstacle, randomize its Z position ---
     for i, (name, obj) in enumerate(rigid_objects.items()):
         # Get current positions (tensor shape [num_envs, 3])
@@ -841,7 +843,8 @@ def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=5
         # sample new z per selected env from N(mean=current_task, std=0.005)
         new_z = np.random.normal(loc=new_task[0], scale=0.005)
         pos[env_ids, 2] = new_z
-        pos[env_ids, 0] = (i+1) * new_task[1]  # spread out obstacles in x
+        pos[env_ids, 1] = env_origins[:, 1]
+        pos[env_ids, 0] = env_origins[:, 0] + (i+1) * new_task[1]  # spread out obstacles in x
 
         # Optional: freeze rotation (keep same quat)
         # obj.root_quat_w[env_ids] = obj.root_quat_w[env_ids]
@@ -1030,7 +1033,7 @@ class CurriculumCfg:
 @configclass
 class BernardFlatWithObstaclesEnvCfg(ManagerBasedRLEnvCfg):
     # Scene settings
-    scene: BernardSceneCfg = BernardSceneCfg(num_envs=128, env_spacing=2.5)
+    scene: BernardSceneCfg = BernardSceneCfg(num_envs=128, env_spacing=16)
     # Basic settings
     commands: CommandsCfg = CommandsCfg()
     observations: ObservationsCfg = ObservationsCfg()
