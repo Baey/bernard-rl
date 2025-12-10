@@ -894,104 +894,104 @@ class CurriculumCfg:
             "step_size": 0.1
         }
     )
-    velocity_command_x_curriculum_1 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_x",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.25, 0.25),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
-    )
-    velocity_command_y_curriculum_1 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_y",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.25, 0.25),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
-    )
-    velocity_command_x_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_x",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.45, 0.45),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_y_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_y",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.45, 0.45),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_z_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.ang_vel_z",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.35, 0.35),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_heading_curriculum = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.heading",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-math.pi, math.pi),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
-    )
-    velocity_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_lin_vel_xy_exp",
-            "weight": 2.2,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    velocity_command_reward_schedule_2 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_lin_vel_xy_exp",
-            "weight": 3.0,
-            "num_steps": CURRICULUM_STAGE_2_STEPS,
-        }
-    )
-    velocity_z_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_ang_vel_z_exp",
-            "weight": 0.3,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    velocity_z_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_ang_vel_z_exp",
-            "weight": 0.5,
-            "num_steps": CURRICULUM_STAGE_2_STEPS,
-        }
-    )
+    # velocity_command_x_curriculum_1 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_x",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.25, 0.25),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_y_curriculum_1 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_y",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.25, 0.25),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_x_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_x",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.45, 0.45),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_y_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_y",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.45, 0.45),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_z_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.ang_vel_z",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.35, 0.35),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_heading_curriculum = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.heading",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-math.pi, math.pi),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_lin_vel_xy_exp",
+    #         "weight": 2.2,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # velocity_command_reward_schedule_2 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_lin_vel_xy_exp",
+    #         "weight": 3.0,
+    #         "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #     }
+    # )
+    # velocity_z_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_ang_vel_z_exp",
+    #         "weight": 0.3,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # velocity_z_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_ang_vel_z_exp",
+    #         "weight": 0.5,
+    #         "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #     }
+    # )
     base_pos_reward_schedule = CurrTerm(
         func=mdp.modify_reward_weight,
         params={
