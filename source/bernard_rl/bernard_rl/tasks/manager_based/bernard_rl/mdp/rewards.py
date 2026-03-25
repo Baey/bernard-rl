@@ -36,6 +36,17 @@ def base_lin_vel_xy(env: ManagerBasedRLEnv, command_name: str | None=None, asset
         reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) < 0.1
     return reward
 
+def track_lin_vel_xy_yaw_frame_exp(
+    env, std: float, command_name: str, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
+) -> torch.Tensor:
+    """Reward tracking of linear velocity commands (xy axes) in the gravity aligned robot frame using exponential kernel."""
+    # extract the used quantities (to enable type-hinting)
+    asset = env.scene[asset_cfg.name]
+    vel_yaw = quat_apply_inverse(yaw_quat(asset.data.root_quat_w), asset.data.root_lin_vel_w[:, :3])
+    lin_vel_error = torch.sum(
+        torch.square(env.command_manager.get_command(command_name)[:, :2] - vel_yaw[:, :2]), dim=1
+    )
+    return torch.exp(-lin_vel_error / std**2)
 
 def base_to_xy_l1(
     env: ManagerBasedRLEnv,

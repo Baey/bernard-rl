@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import math
+import torch
+import numpy as np
+
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
@@ -144,10 +147,10 @@ class CommandsCfg:
         heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0.0, 0.0),
-            lin_vel_y=(-0.0, 0.0),
+            lin_vel_x=(-0.1, 0.45),
+            lin_vel_y=(-0.2, 0.2),
             ang_vel_z=(-0.0, 0.0),
-            heading=(-0.0, 0.0),
+            heading=(-np.pi/2, np.pi/2),
         )
     )
 
@@ -298,69 +301,69 @@ class EventCfg:
     """Configuration for events."""
 
     # startup
-    physics_material = EventTerm(
-        func=mdp.randomize_rigid_body_material,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "static_friction_range": (0.8, 0.99),
-            "dynamic_friction_range": (0.7, 0.95),
-            "restitution_range": (0.0, 0.0),
-            "num_buckets": 64,
-        },
-    )
-    add_base_mass = EventTerm(
-        func=mdp.randomize_rigid_body_mass,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="body"),
-            "mass_distribution_params": (-0.15, 0.15),
-            "operation": "add",
-        },
-    )
-    move_base_com = EventTerm(
-        func=mdp.randomize_rigid_body_com,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="body"),
-            "com_range": {
-                "x": (-0.08, 0.08),
-                "y": (-0.06, 0.06),
-                "z": (-0.05, 0.05),
-            },
-        },
-    )
-    move_rest_com = EventTerm(
-        func=mdp.randomize_rigid_body_com,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="^(?!body$).*"),
-            "com_range": {
-                "x": (-0.02, 0.02),
-                "y": (-0.02, 0.02),
-                "z": (-0.02, 0.02),
-            },
-        },
-    )
-    joint_friction = EventTerm(
-        func=mdp.randomize_joint_parameters,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "friction_distribution_params": (0.0, 0.015),
-            "operation": "add"
-        }
-    )
-    actuator_gains = EventTerm(
-        func=mdp.randomize_actuator_gains,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
-            "stiffness_distribution_params": (-30.0, 10.0),
-            "damping_distribution_params": (-0.2, 0.1),
-            "operation": "add"
-        }
-    )
+    # physics_material = EventTerm(
+    #     func=mdp.randomize_rigid_body_material,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+    #         "static_friction_range": (0.8, 0.99),
+    #         "dynamic_friction_range": (0.7, 0.95),
+    #         "restitution_range": (0.0, 0.0),
+    #         "num_buckets": 64,
+    #     },
+    # )
+    # add_base_mass = EventTerm(
+    #     func=mdp.randomize_rigid_body_mass,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="body"),
+    #         "mass_distribution_params": (-0.15, 0.15),
+    #         "operation": "add",
+    #     },
+    #)
+    # move_base_com = EventTerm(
+    #     func=mdp.randomize_rigid_body_com,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="body"),
+    #         "com_range": {
+    #             "x": (-0.08, 0.08),
+    #             "y": (-0.06, 0.06),
+    #             "z": (-0.05, 0.05),
+    #         },
+    #     },
+    # )
+    # move_rest_com = EventTerm(
+    #     func=mdp.randomize_rigid_body_com,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names="^(?!body$).*"),
+    #         "com_range": {
+    #             "x": (-0.02, 0.02),
+    #             "y": (-0.02, 0.02),
+    #             "z": (-0.02, 0.02),
+    #         },
+    #     },
+    # )
+    # joint_friction = EventTerm(
+    #     func=mdp.randomize_joint_parameters,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+    #         "friction_distribution_params": (0.0, 0.015),
+    #         "operation": "add"
+    #     }
+    # )
+    # actuator_gains = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="startup",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=".*"),
+    #         "stiffness_distribution_params": (-30.0, 10.0),
+    #         "damping_distribution_params": (-0.2, 0.1),
+    #         "operation": "add"
+    #     }
+    # )
 
     # reset
     base_external_force_torque = EventTerm(
@@ -373,26 +376,26 @@ class EventCfg:
         },
     )
 
-    reset_base = EventTerm(
-        func=mdp.reset_root_state_uniform,
-        mode="reset",
-        params={
-            "pose_range": {
-                "x": (-0.0, 0.0),
-                "y": (-0.0, 0.0),
-                "yaw": (-3.14, 3.14),
-                "z": (0.0, 0.15),
-            },
-            "velocity_range": {
-                "x": (-0.2, 0.2),
-                "y": (-0.2, 0.2),
-                "z": (-0.2, 0.2),
-                "roll": (-0.01, 0.01),
-                "pitch": (-0.01, 0.01),
-                "yaw": (-0.01, 0.01),
-            },
-        },
-    )
+    # reset_base = EventTerm(
+    #     func=mdp.reset_root_state_uniform,
+    #     mode="reset",
+    #     params={
+    #         "pose_range": {
+    #             "x": (-0.0, 0.0),
+    #             "y": (-0.0, 0.0),
+    #             "yaw": (-3.14, 3.14),
+    #             "z": (0.0, 0.15),
+    #         },
+    #         "velocity_range": {
+    #             "x": (-0.2, 0.2),
+    #             "y": (-0.2, 0.2),
+    #             "z": (-0.2, 0.2),
+    #             "roll": (-0.01, 0.01),
+    #             "pitch": (-0.01, 0.01),
+    #             "yaw": (-0.01, 0.01),
+    #         },
+    #     },
+    # )
 
     reset_robot_joints = EventTerm(
         func=mdp.reset_joints_by_scale,
@@ -403,7 +406,7 @@ class EventCfg:
         },
     )
 
-    # interval
+    #interval
     push_robot = EventTerm(
         func=mdp.push_by_setting_velocity,
         mode="interval",
@@ -418,12 +421,12 @@ class RewardsCfg:
     # -- task
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_exp,
-        weight=0.0,
+        weight=2.2,
         params={"command_name": "base_velocity", "std": math.sqrt(0.19)},
     )
     track_ang_vel_z_exp = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.0,
+        weight=0.5,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
     # -- rewards
@@ -462,7 +465,7 @@ class RewardsCfg:
     base_pos_xyz = RewTerm(
         func=mdp.base_to_xy_l1,
         params={"target_pos": (0.0, 0.0)},
-        weight=-5e-3
+        weight=0.0
     )
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.01)
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-4.5e-3)
@@ -557,165 +560,250 @@ class TerminationsCfg:
     )
 
 
+curriculum_state = {
+    "current_task": [0.0, 0.0, 0.0, 0.0, 0.0],
+    "alpgmm_teacher": mdp.ALPGMMTeacher(curriculum_dict={
+    "step_size": 2000,
+    "eval_every": 10000,
+    "update_every": 2500
+},param_bounds=[(-0.7, 0.7), (-0.2, 0.2), (-0.3, 0.3), (-0.1, 0.1), (0.0, 1.0)], scenario="bipedal_walker")
+}
+
+
+def resample_obstacle_heights(env, env_ids, old_value, z_ranges, every_n_steps=5000):
+    """
+    Randomize the Z-position (height) of all rigid obstacles in the environment.
+
+    Args:
+        env: IsaacLab environment instance.
+        env_ids: List of environment indices being reset/updated.
+        old_value: Placeholder (not used).
+        z_ranges: List of (min_z, max_z) tuples per obstacle or a single tuple for all.
+        every_n_steps: Update frequency in environment steps.
+
+    Returns:
+        modify_env_param.NO_CHANGE (since we modify in-place) 
+    """
+
+    global curriculum_state
+
+    mean_reward = torch.mean(env.reward_manager._reward_buf).item()
+    current_task = curriculum_state["current_task"]
+    alpgmm_teacher = curriculum_state["alpgmm_teacher"]
+
+    alpgmm_teacher.update(np.array(current_task), mean_reward)
+
+    new_task = alpgmm_teacher.sample_task()
+
+    curriculum_state["current_task"] = new_task
+
+    dicts = env.event_manager.active_terms
+    for i, all_n in dicts.items():
+        if i == "reset" or i == "interval":
+            for n in all_n:
+                if n == "base_external_force_torque":
+                    new_one = EventTerm(
+                        func=mdp.apply_external_force_torque,
+                        mode="reset",
+                        params={
+                            "asset_cfg": SceneEntityCfg("robot", body_names="body"),
+                            "force_range": (max(z_ranges[0][0], new_task[0]-0.05*(z_ranges[0][1]-z_ranges[0][0])), min(z_ranges[0][1], new_task[0]+0.05*(z_ranges[0][1]-z_ranges[0][0]))),
+                            "torque_range": (max(z_ranges[1][0], new_task[1]-0.05*(z_ranges[1][1]-z_ranges[1][0])), min(z_ranges[1][1], new_task[1]+0.05*(z_ranges[1][1]-z_ranges[1][0]))),
+                        },
+                    )
+                if n == "reset_robot_joints":
+                    new_one = EventTerm(
+                        func=mdp.reset_joints_by_scale,
+                        mode="reset",
+                        params={
+                            "position_range": (max(z_ranges[2][0], new_task[2]-0.05*(z_ranges[2][1]-z_ranges[2][0])), min(z_ranges[2][1], new_task[2]+0.05*(z_ranges[2][1]-z_ranges[2][0]))),
+                            "velocity_range": (max(z_ranges[3][0], new_task[3]-0.05*(z_ranges[3][1]-z_ranges[3][0])), min(z_ranges[3][1], new_task[3]+0.05*(z_ranges[3][1]-z_ranges[3][0]))),
+                        },
+                    )
+                if n == "push_robot":
+                    x = new_task[4] * 0.3
+                    y = new_task[4] * 0.5
+                    new_one = EventTerm(
+                        func=mdp.push_by_setting_velocity,
+                        mode="interval",
+                        interval_range_s=(5.0, 6.5),
+                        params={"velocity_range": {"x": (x, x), "y": (y, y)}},
+                    )
+                env.event_manager.set_term_cfg(n, new_one)
+
+    # reset_env_ids = env.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+    # env.event_manager.reset(env_ids=reset_env_ids)
+    return mdp.modify_term_cfg.NO_CHANGE
+
+
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
 
-    push_robot_curriculum = CurrTerm(
-        func=mdp.push_robot_levels,
-        params={
-            "velocity_range": {
-                "x": (-0.3, 0.3),
-                "y": (-0.3, 0.3)
-            },
-            "alive_s_threshold": 14.0,
-            "interval_min": 7.0,
-            "velocity_step_size": 0.1,
-            "interval_step_size": 0.5
-        }
-    )
-    reset_base_curriculum = CurrTerm(
-        func=mdp.reset_base_levels,
-        params={
-            "velocity_range": {
-                "x": (-0.3, 0.3),
-                "y": (-0.3, 0.3),
-                "z": (-0.3, 0.3),
-            },
-            "alive_s_threshold": 12.0,
-            "step_size": 0.1
-        }
-    )
-    velocity_command_x_curriculum_1 = CurrTerm(
+    height_curriculum_1 = CurrTerm(
         func=mdp.modify_term_cfg,
         params={
-            "address": "commands.base_velocity.ranges.lin_vel_x",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.25, 0.25),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
+            "address": "cfg.events",  # live objects container
+            "modify_fn": resample_obstacle_heights,
+            "modify_params": {"z_ranges": [(0.8, 0.99), (0.7, 0.95), (-0.15, 0.15), (0.0, 0.015), (-30.0, 10.0), (-0.2, 0.1)], "every_n_steps": 10},
+        },
     )
-    velocity_command_y_curriculum_1 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_y",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.25, 0.25),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
-    )
-    velocity_command_x_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_x",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.45, 0.45),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_y_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.lin_vel_y",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.45, 0.45),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_z_curriculum_2 = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.ang_vel_z",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-0.35, 0.35),
-                "num_steps": CURRICULUM_STAGE_2_STEPS,
-            }
-        }
-    )
-    velocity_command_heading_curriculum = CurrTerm(
-        func=mdp.modify_term_cfg,
-        params={
-            "address": "commands.base_velocity.ranges.heading",
-            "modify_fn": override_velocity_command_range,
-            "modify_params": {
-                "value": (-math.pi, math.pi),
-                "num_steps": CURRICULUM_STAGE_1_STEPS,
-            }
-        }
-    )
-    velocity_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_lin_vel_xy_exp",
-            "weight": 2.2,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    velocity_command_reward_schedule_2 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_lin_vel_xy_exp",
-            "weight": 3.0,
-            "num_steps": CURRICULUM_STAGE_2_STEPS,
-        }
-    )
-    velocity_z_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_ang_vel_z_exp",
-            "weight": 0.3,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    velocity_z_command_reward_schedule_1 = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "track_ang_vel_z_exp",
-            "weight": 0.5,
-            "num_steps": CURRICULUM_STAGE_2_STEPS,
-        }
-    )
-    base_pos_reward_schedule = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "base_pos_xyz",
-            "weight": 0.0,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    joint_deviation_arms_reward_schedule = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "joint_deviation_arms",
-            "weight": -0.8,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    joint_deviation_knees_reward_schedule = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "joint_deviation_knees",
-            "weight": -0.4,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
-    joint_deviation_hips_reward_schedule = CurrTerm(
-        func=mdp.modify_reward_weight,
-        params={
-            "term_name": "joint_deviation_hips",
-            "weight": -0.1,
-            "num_steps": CURRICULUM_STAGE_1_STEPS,
-        }
-    )
+
+    # push_robot_curriculum = CurrTerm(
+    #     func=mdp.push_robot_levels,
+    #     params={
+    #         "velocity_range": {
+    #             "x": (-0.3, 0.3),
+    #             "y": (-0.3, 0.3)
+    #         },
+    #         "alive_s_threshold": 14.0,
+    #         "interval_min": 7.0,
+    #         "velocity_step_size": 0.1,
+    #         "interval_step_size": 0.5
+    #     }
+    # )
+    # reset_base_curriculum = CurrTerm(
+    #     func=mdp.reset_base_levels,
+    #     params={
+    #         "velocity_range": {
+    #             "x": (-0.3, 0.3),
+    #             "y": (-0.3, 0.3),
+    #             "z": (-0.3, 0.3),
+    #         },
+    #         "alive_s_threshold": 12.0,
+    #         "step_size": 0.1
+    #     }
+    # )
+    # velocity_command_x_curriculum_1 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_x",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.25, 0.25),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_y_curriculum_1 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_y",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.25, 0.25),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_x_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_x",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.45, 0.45),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_y_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.lin_vel_y",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.45, 0.45),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_z_curriculum_2 = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.ang_vel_z",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-0.35, 0.35),
+    #             "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_heading_curriculum = CurrTerm(
+    #     func=mdp.modify_term_cfg,
+    #     params={
+    #         "address": "commands.base_velocity.ranges.heading",
+    #         "modify_fn": override_velocity_command_range,
+    #         "modify_params": {
+    #             "value": (-math.pi, math.pi),
+    #             "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #         }
+    #     }
+    # )
+    # velocity_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_lin_vel_xy_exp",
+    #         "weight": 2.2,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # velocity_command_reward_schedule_2 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_lin_vel_xy_exp",
+    #         "weight": 3.0,
+    #         "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #     }
+    # )
+    # velocity_z_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_ang_vel_z_exp",
+    #         "weight": 0.3,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # velocity_z_command_reward_schedule_1 = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "track_ang_vel_z_exp",
+    #         "weight": 0.5,
+    #         "num_steps": CURRICULUM_STAGE_2_STEPS,
+    #     }
+    # )
+    # base_pos_reward_schedule = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "base_pos_xyz",
+    #         "weight": 0.0,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # joint_deviation_arms_reward_schedule = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "joint_deviation_arms",
+    #         "weight": -0.8,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # joint_deviation_knees_reward_schedule = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "joint_deviation_knees",
+    #         "weight": -0.4,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
+    # joint_deviation_hips_reward_schedule = CurrTerm(
+    #     func=mdp.modify_reward_weight,
+    #     params={
+    #         "term_name": "joint_deviation_hips",
+    #         "weight": -0.1,
+    #         "num_steps": CURRICULUM_STAGE_1_STEPS,
+    #     }
+    # )
 
 ##
 # Environment configuration

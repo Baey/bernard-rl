@@ -88,4 +88,11 @@ def update_rsl_rl_cfg(agent_cfg: RslRlOnPolicyRunnerCfg, args_cli: argparse.Name
         agent_cfg.wandb_project = args_cli.log_project_name
         agent_cfg.neptune_project = args_cli.log_project_name
 
+    # Ustawienie Teamu (Entity)
+    if hasattr(args_cli, "log_entity_name") and args_cli.log_entity_name:
+        agent_cfg.wandb_entity = args_cli.log_entity_name
+    else:
+        # Domyślny team, jeśli nie podano w CLI
+        agent_cfg.wandb_entity = "pawel-kocur282003-agh-ust"
+
     return agent_cfg
